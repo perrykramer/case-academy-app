@@ -1,13 +1,23 @@
-import { SignInButton, SignUpButton } from "@clerk/nextjs";
-import { auth } from "@clerk/nextjs/server";
-import { redirect } from "next/navigation";
+"use client";
 
-export default async function LandingPage() {
-  const { userId } = await auth();
+import { SignInButton, SignUpButton, useAuth } from "@clerk/nextjs";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+
+export default function LandingPage() {
+  const { isSignedIn, isLoaded } = useAuth();
+  const router = useRouter();
 
   // Redirect to dashboard if user is already signed in
-  if (userId) {
-    redirect("/dashboard");
+  useEffect(() => {
+    if (isLoaded && isSignedIn) {
+      router.push("/dashboard");
+    }
+  }, [isLoaded, isSignedIn, router]);
+
+  // Show nothing while checking auth status
+  if (!isLoaded || isSignedIn) {
+    return null;
   }
 
   return (

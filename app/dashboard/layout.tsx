@@ -1,16 +1,27 @@
-import { auth } from "@clerk/nextjs/server";
-import { redirect } from "next/navigation";
+"use client";
 
-export default async function DashboardLayout({
+import { useAuth } from "@clerk/nextjs";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+
+export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const { userId } = await auth();
+  const { isSignedIn, isLoaded } = useAuth();
+  const router = useRouter();
 
   // Redirect to sign-in if user is not authenticated
-  if (!userId) {
-    redirect("/sign-in");
+  useEffect(() => {
+    if (isLoaded && !isSignedIn) {
+      router.push("/sign-in");
+    }
+  }, [isLoaded, isSignedIn, router]);
+
+  // Show nothing while checking auth status or if not signed in
+  if (!isLoaded || !isSignedIn) {
+    return null;
   }
 
   return <>{children}</>;
