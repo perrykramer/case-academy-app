@@ -3,7 +3,6 @@ import { clerkMiddleware } from "@clerk/nextjs/server";
 export default clerkMiddleware();
 
 export const config = {
-  runtime: "nodejs",
   matcher: ["/((?!.*\\..*|_next).*)","/(api|trpc)(.*)"],
 };
 ```
@@ -11,5 +10,5 @@ export const config = {
 Save, then:
 ```
 git add .
-git commit -m "force nodejs runtime for middleware"
+git commit -m "fix middleware syntax"
 git push origin main
