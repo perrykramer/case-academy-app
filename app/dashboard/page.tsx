@@ -231,7 +231,7 @@ export default function DashboardPage() {
             <p>Connect with fellow aspiring consultants. Ask questions, find practice partners, share tips, and get direct access to Perry and the Case Academy team.</p>
             <p className="small">We use Slack to keep things fast and familiar.</p>
             <a
-              href="https://join.slack.com/t/case-academy-group/signup?x=x-p10618235984273-10633593895056-10633595635504"
+              href="https://join.slack.com/t/case-academy-group/shared_invite/zt-3rdo65h1w-Y7ehVZCRws8NHu7Mw29~ZQ"
               target="_blank"
               rel="noopener noreferrer"
               className="btn btn-primary"
