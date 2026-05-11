@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import { getLessonBySlug, getNextLesson, getPreviousLesson } from '@/data/lessons';
 import { supabaseAdmin } from '@/lib/supabase';
 import LessonPlayer from '@/components/LessonPlayer';
+import LessonFeedback from '@/components/LessonFeedback';
 
 export default async function LessonPage({
   params,
@@ -62,6 +63,8 @@ export default async function LessonPage({
           alreadyCompleted={alreadyCompleted}
         />
 
+        <LessonFeedback lessonSlug={lesson.slug} />
+        
         {/* Prev / Next navigation */}
         <div
           style={{
