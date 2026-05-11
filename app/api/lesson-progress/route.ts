@@ -3,7 +3,8 @@ import { supabaseAdmin } from '@/lib/supabase';
 import { NextResponse } from 'next/server';
 
 export async function POST(request: Request) {
-  const { userId } = await auth();
+  const { userId, sessionClaims } = await auth();
+  const email = sessionClaims?.email as string | undefined;    
   if (!userId) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
@@ -21,6 +22,7 @@ export async function POST(request: Request) {
     .upsert(
       {
         clerk_user_id: userId,
+        clerk_email: email,
         lesson_slug: lessonSlug,
         completed_at: new Date().toISOString(),
       },

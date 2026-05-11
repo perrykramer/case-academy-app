@@ -3,7 +3,8 @@ import { supabaseAdmin } from '@/lib/supabase';
 import { NextResponse } from 'next/server';
 
 export async function POST(request: Request) {
-  const { userId } = await auth();
+  const { userId, sessionClaims } = await auth();
+  const email = sessionClaims?.email as string | undefined;
   if (!userId) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
@@ -17,6 +18,7 @@ export async function POST(request: Request) {
 
   const { error } = await supabaseAdmin.from('video_sessions').insert({
     clerk_user_id: userId,
+    clerk_email: email,
     lesson_slug: lessonSlug,
     watch_seconds: Math.round(watchSeconds || 0),
     max_position_seconds: Math.round(maxPositionSeconds || 0),
