@@ -63,15 +63,15 @@ export const lessons: Lesson[] = [
     youtubeId: 'N0LYurSIRps',
   },
   {
-    slug: 'mental-math-intro-and-tips',
+    slug: 'case-math-intro-and-tips',
     order: 10,
-    title: 'Mental Math: Intro + Tips',
+    title: 'Case Math: Intro + Tips',
     youtubeId: 'EjN9osNec5M',
   },
   {
-    slug: 'mental-math-market-sizing-example',
+    slug: 'case-math-market-sizing-example',
     order: 11,
-    title: 'Mental Math: Market Sizing Example',
+    title: 'Case Math: Market Sizing Example',
     youtubeId: 'hfYK_gsZSu0',
   },
   {
