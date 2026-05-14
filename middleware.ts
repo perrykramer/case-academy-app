@@ -1,6 +1,6 @@
 import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
-import { isPilotUser } from './lib/pilot-access';
+import { hasAccess } from './lib/access';
 
 // Routes requiring sign-in
 const isProtectedRoute = createRouteMatcher([
@@ -24,7 +24,7 @@ export default clerkMiddleware(async (auth, req) => {
     // For pilot-only routes, also check allowlist
     if (isPilotOnlyRoute(req)) {
       const email = sessionClaims?.email as string | undefined;
-      const hasPilotAccess = await isPilotUser(email);
+      const hasPilotAccess = await hasAccess(email);
 
       if (!hasPilotAccess) {
         const pilotPendingUrl = new URL('/pilot-pending', req.url);
