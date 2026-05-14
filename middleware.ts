@@ -8,12 +8,16 @@ const isProtectedRoute = createRouteMatcher([
   '/case-course(.*)',
 ]);
 
-// Routes ALSO requiring pilot allowlist (not just any signed-in user)
-const isPilotOnlyRoute = createRouteMatcher(['/case-course(.*)']);
+// Routes ALSO requiring premium access (not just any signed-in user)
+const isPremiumRoute = createRouteMatcher(['/case-course(.*)']);
 
 export default clerkMiddleware(async (auth, req) => {
+  console.log(`[middleware] Path: ${req.nextUrl.pathname}, isProtected: ${isProtectedRoute(req)}, isPremium: ${isPremiumRoute(req)}`);
+
   if (isProtectedRoute(req)) {
     const { userId, sessionClaims } = await auth();
+
+    console.log(`[middleware] userId: ${userId}, email claim: ${sessionClaims?.email}`);
 
     // Not signed in → bounce to Clerk sign-in
     if (!userId) {
@@ -21,14 +25,16 @@ export default clerkMiddleware(async (auth, req) => {
       return;
     }
 
-    // For pilot-only routes, also check allowlist
-    if (isPilotOnlyRoute(req)) {
+    // For premium routes, also check subscription status
+    if (isPremiumRoute(req)) {
       const email = sessionClaims?.email as string | undefined;
-      const hasPilotAccess = await hasAccess(email);
+      const hasPremiumAccess = await hasAccess(email);
 
-      if (!hasPilotAccess) {
-        const pilotPendingUrl = new URL('/pilot-pending', req.url);
-        return NextResponse.redirect(pilotPendingUrl);
+      console.log(`[middleware] email: ${email}, hasPremiumAccess: ${hasPremiumAccess}`);
+
+      if (!hasPremiumAccess) {
+        const subscribeUrl = new URL('/subscribe', req.url);
+        return NextResponse.redirect(subscribeUrl);
       }
     }
   }
@@ -36,9 +42,8 @@ export default clerkMiddleware(async (auth, req) => {
 
 export const config = {
   matcher: [
-    // Skip Next.js internals and static files
-    '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
-    // Always run for API routes
-    '/(api|trpc)(.*)',
+    '/dashboard/:path*',
+    '/case-course/:path*',
+    '/api/:path*',
   ],
 };
