@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useUser, UserButton } from "@clerk/nextjs";
 import { useState } from "react";
 
@@ -197,14 +198,14 @@ export default function DashboardPage() {
               <h4 className="resource-title">Resume Guide</h4>
               <p className="resource-desc">Consulting resume best practices &amp; templates</p>
             </div>
-            <div className="card hoverable">
+            <Link href="/library" className="card hoverable" style={{ textDecoration: 'none', color: 'inherit' }}>
               <div className="resource-header">
-                <span className="resource-icon">📚</span>
-                <span className="badge badge-locked">Coming Soon</span>
+                <span className="resource-icon">📋</span>
+                <span className="badge badge-live">Live</span>
               </div>
-              <h4 className="resource-title">Practice Problem Archive</h4>
-              <p className="resource-desc">Past problems with detailed walkthroughs</p>
-            </div>
+              <h4 className="resource-title">Case Library</h4>
+              <p className="resource-desc">Curated case interviews to practice solo or with partners</p>
+            </Link>
             <div className="card hoverable">
               <div className="resource-header">
                 <span className="resource-icon">🤖</span>

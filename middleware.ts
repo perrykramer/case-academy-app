@@ -45,5 +45,6 @@ export const config = {
     '/dashboard/:path*',
     '/case-course/:path*',
     '/api/:path*',
+    '/library/:path*',
   ],
 };
