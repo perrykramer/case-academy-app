@@ -619,7 +619,7 @@ export default function LandingPage() {
             <div>
               <div style={{ position: "relative", aspectRatio: "1 / 1", borderRadius: 6, overflow: "hidden" }}>
                 <Image
-                  src="/images/Perry Headshot.jpg"
+                  src="/images/perry-headshot.jpg"
                   alt="Perry Kramer, founder of Case Academy"
                   fill
                   style={{ objectFit: "cover" }}
