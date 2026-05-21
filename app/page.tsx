@@ -1,70 +1,981 @@
 "use client";
 
-import { SignInButton, SignUpButton, useAuth } from "@clerk/nextjs";
+import { useAuth, SignedIn, SignedOut } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import Image from "next/image";
+import { C } from "@/lib/tokens";
+import { Wordmark } from "@/components/Wordmark";
+
+const FAQS = [
+  {
+    q: "What do I get access to right now?",
+    a: "The Case Crash Course is fully available today. The case library is live and growing every week, and video walkthroughs are on the way. As a founding member you get everything the moment it ships — plus weekly office hours during the build.",
+  },
+  {
+    q: "Why is it $9.99 when it'll be $29 later?",
+    a: "Founding members are getting in while I'm still building. The $9.99 rate is my thank-you — it's locked for life, even after the price rises to $29 at full launch. You're betting on the trajectory, and I'm rewarding you for it.",
+  },
+  {
+    q: "What are the office hours?",
+    a: "A weekly group call during the build phase. Bring your resume, your questions, or a case you want to run. They're recorded and added to the library, so you get the value even if you can't make it live. This is a founding-member perk during the build.",
+  },
+  {
+    q: "I'm a rising sophomore and don't know what a case is. Is this for me?",
+    a: "Yes — explicitly. The Crash Course starts with 'what is consulting' before it ever touches a framework. The earlier you start, the more ready you'll be by recruiting season.",
+  },
+  {
+    q: "What makes Case Academy different?",
+    a: "I just left BCG — I sat in the analyst seat last year, not a decade ago. And it's self-paced and affordable: everything you need in one place, growing every week, at a fraction of what coaching costs.",
+  },
+  {
+    q: "Can I cancel anytime?",
+    a: "Anytime, no questions asked. But if you cancel, you lose the founding rate — re-joining later means paying full price.",
+  },
+];
+
+function RedCheck() {
+  return (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 14 14"
+      fill="none"
+      style={{ flexShrink: 0, marginTop: 3 }}
+    >
+      <path
+        d="M 2 7 L 6 11 L 12 3"
+        stroke="#C8302E"
+        strokeWidth="2"
+        fill="none"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+
+const btnPrimary: React.CSSProperties = {
+  display: "inline-block",
+  background: C.ink,
+  color: C.canvas,
+  borderRadius: 4,
+  padding: "10px 20px",
+  fontSize: 13,
+  fontWeight: 500,
+  textDecoration: "none",
+  border: "none",
+  cursor: "pointer",
+  fontFamily: "var(--font-inter), Inter, sans-serif",
+  lineHeight: 1.4,
+};
+
+const btnSecondary: React.CSSProperties = {
+  display: "inline-block",
+  background: "transparent",
+  color: C.ink,
+  borderRadius: 4,
+  padding: "10px 20px",
+  fontSize: 13,
+  fontWeight: 500,
+  textDecoration: "none",
+  border: `1px solid ${C.ink}`,
+  cursor: "pointer",
+  fontFamily: "var(--font-inter), Inter, sans-serif",
+  lineHeight: 1.4,
+};
 
 export default function LandingPage() {
   const { isSignedIn, isLoaded } = useAuth();
   const router = useRouter();
+  const [openFaq, setOpenFaq] = useState<number | null>(0);
+  const [scrolled, setScrolled] = useState(false);
 
-  // Redirect to dashboard if user is already signed in
   useEffect(() => {
     if (isLoaded && isSignedIn) {
       router.push("/dashboard");
     }
   }, [isLoaded, isSignedIn, router]);
 
-  // Show nothing while checking auth status
-  if (!isLoaded || isSignedIn) {
-    return null;
-  }
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 8);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  if (!isLoaded || isSignedIn) return null;
 
   return (
-    <div className="landing">
-      <div className="landing-grid"></div>
-      <div className="landing-glow"></div>
-      <div className="landing-content">
-        <div className="landing-logo">
-          <svg width="200" height="32" viewBox="0 0 280 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <text x="0" y="34" style={{ fontFamily: 'Space Grotesk, sans-serif', fontWeight: 700, fontSize: 34, letterSpacing: '-0.01em' }} fill="#ffffff">Case Academy</text>
-            <path d="M255 17L265 7M265 7H257M265 7V15" stroke="#f59e0b" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
+    <div
+      style={{
+        background: C.canvas,
+        color: C.body,
+        fontFamily: "var(--font-inter), Inter, sans-serif",
+        minHeight: "100vh",
+      }}
+    >
+      {/* ── NAV ── */}
+      <nav
+        className="lp-nav"
+        style={{
+          position: "sticky",
+          top: 0,
+          zIndex: 100,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          borderBottom: `1px solid ${C.hairline}`,
+          background: scrolled ? "rgba(251,250,245,0.96)" : "transparent",
+          backdropFilter: scrolled ? "blur(8px)" : "none",
+          transition: "background 0.2s ease",
+        }}
+      >
+        <Wordmark />
+        <div className="lp-nav-links">
+          <a href="#whats-inside" style={{ color: C.body, fontSize: 14, fontWeight: 500, textDecoration: "none" }}>
+            What&apos;s inside
+          </a>
+          <a href="#why" style={{ color: C.body, fontSize: 14, fontWeight: 500, textDecoration: "none" }}>
+            Why Case Academy
+          </a>
+          <a href="#pricing" style={{ color: C.body, fontSize: 14, fontWeight: 500, textDecoration: "none" }}>
+            Pricing
+          </a>
+          <SignedOut>
+            <a href="/sign-in" style={{ color: C.muted, fontSize: 14, fontWeight: 400, textDecoration: "none" }}>
+              Sign in
+            </a>
+          </SignedOut>
+          <SignedIn>
+            <a href="/dashboard" style={{ color: C.muted, fontSize: 14, fontWeight: 400, textDecoration: "none" }}>
+              Go to dashboard
+            </a>
+          </SignedIn>
+          <a href="#" style={btnPrimary}>
+            Join today
+          </a>
         </div>
-        <h1>Land your dream<br /><span className="accent">consulting offer</span></h1>
-        <p className="subtitle">Video courses, practice problems, and a community of ambitious people preparing for consulting interviews — all in one place.</p>
-        <p className="tagline">Built by consultants. Designed for results.</p>
-        <div className="btn-row">
-          <SignInButton mode="modal">
-            <button className="btn btn-primary" style={{ padding: '16px 36px', fontSize: '16px' }}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/>
-                <path d="M12 23c2.97 0 5.46-.99 7.28-2.66l-3.57-2.77c-.99.66-2.25 1.05-3.71 1.05-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-                <path d="M5.84 14.09A6.68 6.68 0 015.5 12c0-.72.13-1.43.34-2.09V7.07H2.18A11 11 0 001 12c0 1.77.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
-                <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.46 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+      </nav>
+
+      {/* ── HERO ── */}
+      <section
+        className="lp-hero"
+        style={{
+          backgroundImage:
+            "linear-gradient(to right, rgba(27,61,143,0.06) 1px, transparent 1px), linear-gradient(to bottom, rgba(27,61,143,0.06) 1px, transparent 1px)",
+          backgroundSize: "22px 22px",
+        }}
+      >
+        <div style={{ maxWidth: 720, margin: "0 auto" }}>
+          {/* Founding membership badge */}
+          <div
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 6,
+              background: "rgba(200,48,46,0.08)",
+              color: C.red,
+              borderRadius: 999,
+              padding: "4px 12px",
+              fontSize: 11,
+              fontWeight: 500,
+              letterSpacing: "0.08em",
+              marginBottom: 20,
+            }}
+          >
+            <span
+              style={{
+                width: 7,
+                height: 7,
+                borderRadius: "50%",
+                background: C.red,
+                flexShrink: 0,
+              }}
+            />
+            FOUNDING MEMBERSHIP NOW OPEN
+          </div>
+
+          <h1
+            className="lp-hero-h1"
+            style={{
+              color: C.ink,
+              fontWeight: 500,
+              lineHeight: 1.12,
+              letterSpacing: "-0.015em",
+              marginBottom: 20,
+              maxWidth: 640,
+            }}
+          >
+            Everything you need to go from{" "}
+            <span style={{ position: "relative", display: "inline-block" }}>
+              &ldquo;what&apos;s consulting?&rdquo;
+              <svg
+                style={{
+                  position: "absolute",
+                  left: 0,
+                  bottom: -4,
+                  width: "100%",
+                  height: 10,
+                }}
+                viewBox="0 0 240 10"
+                preserveAspectRatio="none"
+              >
+                <path
+                  d="M 4 6 Q 60 2, 120 6 T 236 5"
+                  stroke="#C8302E"
+                  strokeWidth="2"
+                  fill="none"
+                  strokeLinecap="round"
+                />
               </svg>
-              Sign in with Google
-            </button>
-          </SignInButton>
-          <SignUpButton mode="modal">
-            <button className="btn btn-secondary" style={{ padding: '16px 36px', fontSize: '16px' }}>Create Account</button>
-          </SignUpButton>
+            </span>
+            {" "}to interview-ready.
+          </h1>
+
+          <p
+            style={{
+              fontSize: 17,
+              color: C.body,
+              lineHeight: 1.58,
+              marginBottom: 32,
+              maxWidth: 600,
+            }}
+          >
+            A self-paced consulting prep platform built by an Ex-BCG consultant —
+            the crash course, the case library, and the walkthroughs I wish I&apos;d
+            had as a sophomore. All in one place, growing every week.
+          </p>
+
+          <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 16 }}>
+            <a href="#" style={btnPrimary}>
+              Join today — $9.99/mo
+            </a>
+            <a href="#whats-inside" style={btnSecondary}>
+              See what&apos;s inside →
+            </a>
+          </div>
+
+          <p style={{ fontSize: 11, color: C.muted, letterSpacing: "0.06em" }}>
+            Founding rate locked for life · price rises to $29 at full launch · cancel anytime
+          </p>
         </div>
-        <div className="stats">
-          <div style={{ textAlign: 'center' }}>
-            <div className="stat-num">2</div>
-            <div className="stat-label">Video Courses</div>
-          </div>
-          <div style={{ textAlign: 'center' }}>
-            <div className="stat-num">∞</div>
-            <div className="stat-label">Practice Problems</div>
-          </div>
-          <div style={{ textAlign: 'center' }}>
-            <div className="stat-num">24/7</div>
-            <div className="stat-label">Community Access</div>
+      </section>
+
+      {/* ── BUILDING IN PUBLIC ── */}
+      <section
+        className="lp-section"
+        style={{ background: "rgba(27,61,143,0.03)" }}
+      >
+        <div style={{ maxWidth: 760, margin: "0 auto" }}>
+          <p
+            style={{
+              color: C.red,
+              fontSize: 11,
+              fontWeight: 500,
+              letterSpacing: "0.12em",
+              marginBottom: 12,
+            }}
+          >
+            BUILDING IN PUBLIC
+          </p>
+          <h2
+            style={{
+              color: C.ink,
+              fontSize: 36,
+              fontWeight: 500,
+              letterSpacing: "-0.015em",
+              lineHeight: 1.1,
+              marginBottom: 24,
+            }}
+          >
+            I&apos;m building this in the open — and you can get in early.
+          </h2>
+          <div
+            style={{
+              fontFamily: "var(--font-source-serif-4), 'Source Serif 4', Georgia, serif",
+              fontSize: 17,
+              lineHeight: 1.6,
+              color: C.body,
+              display: "flex",
+              flexDirection: "column",
+              gap: 20,
+              maxWidth: 640,
+            }}
+          >
+            <p>
+              Case Academy is live and growing. The Case Crash Course is here today.
+              The case library and video walkthroughs are being added week by week —
+              and founding members get everything as it ships.
+            </p>
+            <p>
+              As a founding member, you also get weekly group office hours with me
+              during the build phase — bring your resume, your questions, a case you
+              want to run — and you&apos;ll help shape what gets built next. Lock the
+              founding rate now and it&apos;s yours for life.
+            </p>
           </div>
         </div>
-      </div>
+      </section>
+
+      {/* ── WHAT'S INSIDE ── */}
+      <section id="whats-inside" className="lp-section">
+        <div style={{ maxWidth: 900, margin: "0 auto" }}>
+          <p
+            style={{
+              color: C.red,
+              fontSize: 11,
+              fontWeight: 500,
+              letterSpacing: "0.12em",
+              marginBottom: 12,
+            }}
+          >
+            WHAT&apos;S INSIDE
+          </p>
+          <h2
+            style={{
+              color: C.ink,
+              fontSize: 36,
+              fontWeight: 500,
+              letterSpacing: "-0.015em",
+              lineHeight: 1.1,
+              marginBottom: 12,
+            }}
+          >
+            What&apos;s inside Case Academy.
+          </h2>
+          <p
+            style={{
+              fontSize: 15,
+              color: C.body,
+              lineHeight: 1.6,
+              marginBottom: 36,
+            }}
+          >
+            Three pillars that take you from total beginner to interview-ready — on your own time.
+          </p>
+
+          <div className="lp-pillars">
+            {/* Card 1 — Case Crash Course */}
+            <div
+              style={{
+                border: `1px solid ${C.hairline}`,
+                borderRadius: 8,
+                padding: 24,
+                background: C.canvas,
+              }}
+            >
+              <span
+                style={{
+                  display: "inline-block",
+                  background: "rgba(27,61,143,0.08)",
+                  color: C.ink,
+                  borderRadius: 999,
+                  padding: "3px 10px",
+                  fontSize: 10,
+                  fontWeight: 500,
+                  letterSpacing: "0.08em",
+                  marginBottom: 14,
+                }}
+              >
+                AVAILABLE NOW
+              </span>
+              <h3
+                style={{
+                  color: C.ink,
+                  fontSize: 18,
+                  fontWeight: 500,
+                  marginBottom: 10,
+                  letterSpacing: "-0.01em",
+                }}
+              >
+                Case Crash Course
+              </h3>
+              <p style={{ fontSize: 14, color: C.body, lineHeight: 1.6 }}>
+                Understand what consultants actually do, what a case interview is, and
+                the building blocks you&apos;ll need — explained in plain English for
+                someone starting from zero.
+              </p>
+            </div>
+
+            {/* Card 2 — Case Library */}
+            <div
+              style={{
+                border: `1px solid ${C.hairline}`,
+                borderRadius: 8,
+                padding: 24,
+                background: C.canvas,
+              }}
+            >
+              <span
+                style={{
+                  display: "inline-block",
+                  background: "rgba(200,48,46,0.08)",
+                  color: C.red,
+                  borderRadius: 999,
+                  padding: "3px 10px",
+                  fontSize: 10,
+                  fontWeight: 500,
+                  letterSpacing: "0.08em",
+                  marginBottom: 14,
+                }}
+              >
+                GROWING WEEKLY
+              </span>
+              <h3
+                style={{
+                  color: C.ink,
+                  fontSize: 18,
+                  fontWeight: 500,
+                  marginBottom: 10,
+                  letterSpacing: "-0.01em",
+                }}
+              >
+                Case Library
+              </h3>
+              <p style={{ fontSize: 14, color: C.body, lineHeight: 1.6 }}>
+                A growing library of practice cases you can work through piece by
+                piece, at your own pace. Build real reps before you ever sit in an
+                interview.
+              </p>
+            </div>
+
+            {/* Card 3 — Video Walkthroughs */}
+            <div
+              style={{
+                border: `1px solid ${C.hairline}`,
+                borderRadius: 8,
+                padding: 24,
+                background: C.canvas,
+              }}
+            >
+              <span
+                style={{
+                  display: "inline-block",
+                  background: "rgba(200,48,46,0.08)",
+                  color: C.red,
+                  borderRadius: 999,
+                  padding: "3px 10px",
+                  fontSize: 10,
+                  fontWeight: 500,
+                  letterSpacing: "0.08em",
+                  marginBottom: 14,
+                }}
+              >
+                COMING SOON
+              </span>
+              <h3
+                style={{
+                  color: C.ink,
+                  fontSize: 18,
+                  fontWeight: 500,
+                  marginBottom: 10,
+                  letterSpacing: "-0.01em",
+                }}
+              >
+                Video Walkthroughs
+              </h3>
+              <p style={{ fontSize: 14, color: C.body, lineHeight: 1.6 }}>
+                Watch me run real cases end-to-end so you can follow along and
+                practice, plus deep dives into frameworks and case math.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── FOUNDING MEMBER PRICING ── */}
+      <section
+        id="pricing"
+        className="lp-section"
+        style={{ background: "rgba(27,61,143,0.03)" }}
+      >
+        <div style={{ maxWidth: 760, margin: "0 auto" }}>
+          <p
+            style={{
+              color: C.red,
+              fontSize: 11,
+              fontWeight: 500,
+              letterSpacing: "0.12em",
+              marginBottom: 12,
+            }}
+          >
+            PRICING
+          </p>
+          <h2
+            style={{
+              color: C.ink,
+              fontSize: 36,
+              fontWeight: 500,
+              letterSpacing: "-0.015em",
+              lineHeight: 1.1,
+              marginBottom: 32,
+            }}
+          >
+            One membership. Everything included.
+          </h2>
+
+          <div
+            style={{
+              maxWidth: 480,
+              border: `1.5px solid ${C.ink}`,
+              borderRadius: 8,
+              padding: 32,
+              display: "flex",
+              flexDirection: "column",
+              position: "relative",
+            }}
+          >
+            <span
+              style={{
+                position: "absolute",
+                top: -1,
+                left: 24,
+                background: C.red,
+                color: "#fff",
+                fontSize: 10,
+                fontWeight: 500,
+                letterSpacing: "0.1em",
+                padding: "3px 10px",
+                borderRadius: "0 0 4px 4px",
+              }}
+            >
+              FOUNDING MEMBER
+            </span>
+
+            <div style={{ marginBottom: 8, marginTop: 12 }}>
+              <span style={{ color: C.ink, fontSize: 36, fontWeight: 500 }}>$9.99</span>
+              <span style={{ color: C.body, fontSize: 15, marginLeft: 4 }}>/ month</span>
+            </div>
+            <p style={{ color: C.muted, fontSize: 13, marginBottom: 6 }}>
+              <span style={{ textDecoration: "line-through" }}>$29 at full launch</span>
+            </p>
+            <p style={{ color: C.body, fontSize: 14, lineHeight: 1.5, marginBottom: 24 }}>
+              Founding rate locked for life. Lock it in now before we open at full price.
+            </p>
+
+            <ul
+              style={{
+                listStyle: "none",
+                padding: 0,
+                margin: "0 0 28px 0",
+                display: "flex",
+                flexDirection: "column",
+                gap: 10,
+              }}
+            >
+              {[
+                "Full access to the Case Crash Course",
+                "The case library, growing every week",
+                "Video walkthroughs as they're released",
+                "Weekly group office hours during the build phase",
+                "A direct say in what gets built next",
+                "Founding rate locked for life",
+              ].map((f) => (
+                <li
+                  key={f}
+                  style={{
+                    display: "flex",
+                    alignItems: "flex-start",
+                    gap: 8,
+                    fontSize: 14,
+                    color: C.body,
+                  }}
+                >
+                  <RedCheck />
+                  {f}
+                </li>
+              ))}
+            </ul>
+
+            <a href="#" style={{ ...btnPrimary, display: "block", textAlign: "center" }}>
+              Join today
+            </a>
+            <p
+              style={{
+                fontSize: 11,
+                color: C.muted,
+                marginTop: 10,
+                textAlign: "center",
+                letterSpacing: "0.04em",
+              }}
+            >
+              Cancel anytime · founding rate never increases
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* ── WHY CASE ACADEMY ── */}
+      <section
+        id="why"
+        className="lp-section"
+        style={{ background: C.canvas }}
+      >
+        <div style={{ maxWidth: 900, margin: "0 auto" }}>
+          <div className="lp-why-grid">
+            {/* Left: photo */}
+            <div>
+              <div style={{ position: "relative", aspectRatio: "1 / 1", borderRadius: 6, overflow: "hidden" }}>
+                <Image
+                  src="/images/Perry Headshot.jpg"
+                  alt="Perry Kramer, founder of Case Academy"
+                  fill
+                  style={{ objectFit: "cover" }}
+                  sizes="(max-width: 768px) 100vw, 300px"
+                />
+              </div>
+              <p
+                style={{
+                  marginTop: 12,
+                  fontWeight: 500,
+                  color: C.ink,
+                  fontSize: 14,
+                }}
+              >
+                Perry Kramer · Founder
+              </p>
+              <p style={{ fontSize: 13, color: C.muted, marginTop: 2 }}>
+                Ex-BCG · Washington &amp; Lee &apos;24
+              </p>
+            </div>
+
+            {/* Right: copy */}
+            <div>
+              <p
+                style={{
+                  color: C.red,
+                  fontSize: 11,
+                  fontWeight: 500,
+                  letterSpacing: "0.12em",
+                  marginBottom: 12,
+                }}
+              >
+                WHY CASE ACADEMY
+              </p>
+              <h2
+                style={{
+                  color: C.ink,
+                  fontSize: 36,
+                  fontWeight: 500,
+                  letterSpacing: "-0.015em",
+                  lineHeight: 1.1,
+                  marginBottom: 24,
+                }}
+              >
+                Why Case Academy?
+              </h2>
+              <div
+                style={{
+                  fontFamily: "var(--font-source-serif-4), 'Source Serif 4', Georgia, serif",
+                  fontSize: 17,
+                  lineHeight: 1.65,
+                  color: C.body,
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 20,
+                }}
+              >
+                <p>Hi, I&apos;m Perry Kramer — Ex-BCG, based in New York City.</p>
+                <p>
+                  A few years ago, I was exactly where you are now: curious about
+                  consulting as a career path, but unsure what cases actually looked
+                  like or what the day-to-day job entailed.
+                </p>
+                <p>
+                  I was fortunate to have mentors who helped me navigate the process.
+                  Case Academy is my way of paying that forward — everything I wish I
+                  had when I was starting out, all in one place.
+                </p>
+                <p>
+                  That means weekly headlines to keep you informed, deadline tracking
+                  so you&apos;re never caught off guard, and case practice designed to
+                  take you from curious to confident — ready for whatever your
+                  interviewer throws at you.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── FAQ ── */}
+      <section className="lp-section" style={{ background: "rgba(27,61,143,0.02)" }}>
+        <div style={{ maxWidth: 760, margin: "0 auto" }}>
+          <p
+            style={{
+              color: C.red,
+              fontSize: 11,
+              fontWeight: 500,
+              letterSpacing: "0.12em",
+              marginBottom: 12,
+            }}
+          >
+            FAQ
+          </p>
+          <h2
+            style={{
+              color: C.ink,
+              fontSize: 36,
+              fontWeight: 500,
+              letterSpacing: "-0.015em",
+              lineHeight: 1.1,
+              marginBottom: 40,
+            }}
+          >
+            Honest answers.
+          </h2>
+          <div style={{ borderTop: `1px solid ${C.hairline}` }}>
+            {FAQS.map((faq, i) => (
+              <div key={i} style={{ borderBottom: `1px solid ${C.hairline}` }}>
+                <button
+                  onClick={() => setOpenFaq(openFaq === i ? null : i)}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    width: "100%",
+                    padding: "20px 0",
+                    background: "none",
+                    border: "none",
+                    cursor: "pointer",
+                    textAlign: "left",
+                    gap: 16,
+                  }}
+                >
+                  <span
+                    style={{
+                      fontSize: 15,
+                      fontWeight: 500,
+                      color: C.ink,
+                      lineHeight: 1.4,
+                    }}
+                  >
+                    {faq.q}
+                  </span>
+                  <span
+                    style={{
+                      color: C.red,
+                      fontSize: 22,
+                      fontWeight: 300,
+                      flexShrink: 0,
+                      lineHeight: 1,
+                      width: 20,
+                      textAlign: "center",
+                    }}
+                  >
+                    {openFaq === i ? "−" : "+"}
+                  </span>
+                </button>
+                <div
+                  className={`lp-faq-answer ${openFaq === i ? "open" : "closed"}`}
+                  style={{
+                    maxHeight: openFaq === i ? 400 : 0,
+                    overflow: "hidden",
+                    transition: "max-height 0.28s ease, opacity 0.2s ease",
+                    opacity: openFaq === i ? 1 : 0,
+                  }}
+                >
+                  <p
+                    style={{
+                      paddingBottom: 20,
+                      fontSize: 14,
+                      color: C.body,
+                      lineHeight: 1.7,
+                    }}
+                  >
+                    {faq.a}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── START FREE ── */}
+      <section
+        id="resources"
+        className="lp-section"
+        style={{ background: "rgba(27,61,143,0.04)" }}
+      >
+        <div style={{ maxWidth: 760, margin: "0 auto" }}>
+          <p
+            style={{
+              color: C.red,
+              fontSize: 11,
+              fontWeight: 500,
+              letterSpacing: "0.12em",
+              marginBottom: 12,
+            }}
+          >
+            START FREE
+          </p>
+          <h2
+            style={{
+              color: C.ink,
+              fontSize: 36,
+              fontWeight: 500,
+              letterSpacing: "-0.015em",
+              lineHeight: 1.1,
+              marginBottom: 16,
+            }}
+          >
+            Get started with free resources today.
+          </h2>
+          <p
+            style={{
+              fontSize: 15,
+              color: C.body,
+              lineHeight: 1.6,
+              marginBottom: 40,
+              maxWidth: 560,
+            }}
+          >
+            A free newsletter to make your life easier during applications —
+            weekly application links, business news to stay informed, and practice
+            problems to stay sharp. Plus, you&apos;ll get my two go-to templates
+            the day you sign up.
+          </p>
+
+          <div
+            style={{
+              border: `1px solid ${C.hairlineStrong}`,
+              borderRadius: 8,
+              padding: 32,
+              maxWidth: 560,
+              background: C.canvas,
+            }}
+          >
+            <ul
+              style={{
+                listStyle: "none",
+                padding: 0,
+                margin: "0 0 28px 0",
+                display: "flex",
+                flexDirection: "column",
+                gap: 16,
+              }}
+            >
+              {[
+                {
+                  title: "Resume template",
+                  desc: "The exact format that got me through BCG screening.",
+                },
+                {
+                  title: "Cover letter template",
+                  desc: "Plus three real examples that landed first-round interviews at MBB.",
+                },
+                {
+                  title: "CA Weekly newsletter",
+                  desc: "Application links, business news, practice problems — every Sunday.",
+                },
+              ].map((item) => (
+                <li
+                  key={item.title}
+                  style={{ display: "flex", alignItems: "flex-start", gap: 10 }}
+                >
+                  <RedCheck />
+                  <div>
+                    <span style={{ fontWeight: 500, color: C.ink, fontSize: 14 }}>
+                      {item.title}
+                    </span>
+                    <span style={{ color: C.muted, fontSize: 13 }}>
+                      {" "}— {item.desc}
+                    </span>
+                  </div>
+                </li>
+              ))}
+            </ul>
+
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+              <input
+                type="email"
+                placeholder="your@email.com"
+                style={{
+                  flex: 1,
+                  minWidth: 180,
+                  border: `1px solid ${C.hairlineStrong}`,
+                  borderRadius: 4,
+                  padding: "10px 14px",
+                  fontSize: 13,
+                  color: C.body,
+                  background: C.canvas,
+                  outline: "none",
+                  fontFamily: "var(--font-inter), Inter, sans-serif",
+                }}
+              />
+              <button style={btnPrimary}>Send them to me</button>
+            </div>
+            <p
+              style={{
+                fontSize: 11,
+                color: C.muted,
+                marginTop: 10,
+                letterSpacing: "0.04em",
+              }}
+            >
+              Unsubscribe anytime
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* ── FINAL CTA ── */}
+      <section className="lp-section" style={{ textAlign: "center" }}>
+        <p
+          style={{
+            color: C.red,
+            fontSize: 11,
+            fontWeight: 500,
+            letterSpacing: "0.12em",
+            marginBottom: 16,
+          }}
+        >
+          READY?
+        </p>
+        <h2
+          style={{
+            color: C.ink,
+            fontSize: 40,
+            fontWeight: 500,
+            letterSpacing: "-0.015em",
+            lineHeight: 1.1,
+            marginBottom: 32,
+          }}
+        >
+          Lock your founding rate.
+        </h2>
+        <a href="#" style={btnPrimary}>
+          Join today — $9.99/mo
+        </a>
+      </section>
+
+      {/* ── FOOTER ── */}
+      <footer
+        style={{
+          borderTop: `1px solid ${C.hairline}`,
+          padding: "28px 40px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          flexWrap: "wrap",
+          gap: 16,
+        }}
+      >
+        <Wordmark fontSize={15} />
+        <div style={{ display: "flex", gap: 24, alignItems: "center" }}>
+          <a href="#" style={{ fontSize: 12, color: C.muted, textDecoration: "none" }}>
+            Privacy
+          </a>
+          <a href="#" style={{ fontSize: 12, color: C.muted, textDecoration: "none" }}>
+            Terms
+          </a>
+          <a href="#" style={{ fontSize: 12, color: C.muted, textDecoration: "none" }}>
+            Contact
+          </a>
+        </div>
+      </footer>
     </div>
   );
 }

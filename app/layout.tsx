@@ -1,24 +1,27 @@
 import type { Metadata } from "next";
-import { Space_Grotesk, Inter } from "next/font/google";
+import { Inter, Source_Serif_4 } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import "./globals.css";
 import { Analytics } from "@vercel/analytics/react";
 
-const spaceGrotesk = Space_Grotesk({
-  variable: "--font-space-grotesk",
-  subsets: ["latin"],
-  display: "swap",
-});
-
 const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
+  weight: ["400", "500"],
+  display: "swap",
+});
+
+const sourceSerif4 = Source_Serif_4({
+  variable: "--font-source-serif-4",
+  subsets: ["latin"],
+  weight: ["400"],
+  style: ["normal", "italic"],
   display: "swap",
 });
 
 export const metadata: Metadata = {
   title: "Case Academy",
-  description: "Land your dream consulting offer",
+  description: "BCG-backed consulting prep for undergrads — mock cases, behavioral prep, and resume reviews.",
 };
 
 export default function RootLayout({
@@ -30,7 +33,7 @@ export default function RootLayout({
     <ClerkProvider>
       <html lang="en">
         <body
-          className={`${spaceGrotesk.variable} ${inter.variable} antialiased`}
+          className={`${inter.variable} ${sourceSerif4.variable} antialiased`}
         >
           {children}
           <Analytics />

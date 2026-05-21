@@ -1,249 +1,294 @@
-"use client";
+import type { CSSProperties } from 'react';
+import { currentUser } from '@clerk/nextjs/server';
+import { UserButton } from '@clerk/nextjs';
+import Link from 'next/link';
+import { Wordmark } from '@/components/Wordmark';
+import { C } from '@/lib/tokens';
+import { DeadlinesTable } from '@/components/DeadlinesTable';
 
-import Link from "next/link";
-import { useUser, UserButton } from "@clerk/nextjs";
-import { useState } from "react";
+type Deadline = {
+  id: string;
+  firm: string;
+  program: string;
+  deadline: string;
+  applyUrl: string;
+};
 
-type Tab = "courses" | "practice" | "resources" | "community";
+async function fetchDeadlines(): Promise<Deadline[]> {
+  const apiKey = process.env.AIRTABLE_API_KEY;
+  const baseId = process.env.AIRTABLE_BASE_ID;
+  const tableName = process.env.AIRTABLE_DEADLINES_TABLE;
 
-export default function DashboardPage() {
-  const { user } = useUser();
-  const [activeTab, setActiveTab] = useState<Tab>("courses");
-  const [showProblemDetail, setShowProblemDetail] = useState(false);
-  const [showHint, setShowHint] = useState(false);
-  const [answerSubmitted, setAnswerSubmitted] = useState(false);
-  const [answerText, setAnswerText] = useState("");
+  if (!apiKey || !baseId || !tableName) {
+    console.log('[deadlines] MISSING ENV →', {
+    });
+    return [];
+  }
 
-  const switchTab = (tab: Tab) => {
-    setActiveTab(tab);
-  };
+  try {
+    const res = await fetch(
+      `https://api.airtable.com/v0/${baseId}/${encodeURIComponent(tableName)}`,
+      {
+        headers: { Authorization: `Bearer ${apiKey}` },
+        next: { revalidate: 3600 },
+      }
+    );
 
-  const handleShowProblemDetail = () => {
-    setShowProblemDetail(true);
-    setActiveTab("practice");
-  };
+    if (!res.ok) {
+      const body = await res.text();
+      console.log('[deadlines] AIRTABLE ERROR →', res.status, body);
+      return [];
+    }
 
-  const toggleHint = () => {
-    setShowHint(!showHint);
-  };
+    const json = await res.json();
+    console.log('[deadlines] SUCCESS → got', json.records?.length ?? 0, 'records');
 
-  const submitAnswer = () => {
-    setAnswerSubmitted(true);
-  };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const mapped = (json.records ?? []).map((r: any) => ({
+      id: r.id,
+      firm: r.fields.Firm ?? '',
+      program: r.fields.Program ?? '',
+      deadline: r.fields.Deadline ?? '',
+      applyUrl: r.fields['Application URL'] ?? '',
+    }));
 
-  const resetProblem = () => {
-    setAnswerSubmitted(false);
-    setAnswerText("");
-    setShowHint(false);
-  };
+    return mapped
+      .filter((d) => {
+        const days = daysUntil(d.deadline);
+        return Number.isFinite(days) && days >= 0;
+      })
+      .sort((a, b) => daysUntil(a.deadline) - daysUntil(b.deadline));
+  } catch (err) {
+    console.log('[deadlines] THREW →', err);
+    return [];
+  }
+}
 
-  const firstName = user?.firstName || "Member";
+function daysUntil(dateStr: string): number {
+  return Math.ceil((new Date(dateStr).getTime() - Date.now()) / 86_400_000);
+}
+
+function deadlinePillStyle(days: number): CSSProperties {
+  if (days <= 14) return { background: '#FEE2E2', color: '#B91C1C', border: '1px solid #FECACA' };
+  if (days <= 30) return { background: '#FEF3C7', color: '#92400E', border: '1px solid #FDE68A' };
+  return { background: '#F0F3FB', color: C.muted, border: `1px solid ${C.hairline}` };
+}
+
+const cardBase: CSSProperties = {
+  background: '#ffffff',
+  border: `1px solid ${C.hairline}`,
+  borderRadius: 10,
+  padding: '20px 22px',
+  flex: '1 1 200px',
+};
+
+const pillGreen: CSSProperties = {
+  display: 'inline-block', fontSize: 11, fontWeight: 600, padding: '3px 10px',
+  borderRadius: 20, background: '#DCFCE7', color: '#166534', border: '1px solid #BBF7D0',
+};
+const pillBlue: CSSProperties = {
+  display: 'inline-block', fontSize: 11, fontWeight: 600, padding: '3px 10px',
+  borderRadius: 20, background: '#EFF6FF', color: C.ink, border: `1px solid ${C.hairline}`,
+};
+const pillNeutral: CSSProperties = {
+  display: 'inline-block', fontSize: 11, fontWeight: 600, padding: '3px 10px',
+  borderRadius: 20, background: '#F3F4F6', color: C.muted, border: '1px solid rgba(0,0,0,0.08)',
+};
+
+export default async function DashboardPage() {
+  const [user, deadlines] = await Promise.all([currentUser(), fetchDeadlines()]);
+  const firstName = user?.firstName || 'Member';
 
   return (
-    <div>
-      <nav className="topnav">
-        <div className="topnav-brand">
-          <svg width="160" height="24" viewBox="0 0 280 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <text x="0" y="34" style={{ fontFamily: 'Space Grotesk, sans-serif', fontWeight: 700, fontSize: 34, letterSpacing: '-0.01em' }} fill="#ffffff">Case Academy</text>
-            <path d="M255 17L265 7M265 7H257M265 7V15" stroke="#f59e0b" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-        </div>
-        <div className="topnav-right">
-          <span className="user-name">{firstName}</span>
+    <div style={{ minHeight: '100vh', background: C.canvas, fontFamily: 'var(--font-inter), Inter, sans-serif', color: C.body }}>
+
+      {/* ── Nav ── */}
+      <nav style={{
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        padding: '14px 40px', borderBottom: `1px solid ${C.hairline}`,
+        background: '#ffffff', position: 'sticky', top: 0, zIndex: 100,
+      }}>
+        <Wordmark fontSize={17} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+          <span style={{ fontSize: 14, color: C.muted, fontWeight: 500 }}>{firstName}</span>
           <UserButton />
         </div>
       </nav>
 
-      <div className="main">
-        <div className="welcome">
-          <h1>Welcome back, {firstName}</h1>
-          <p>Your consulting prep journey starts here. Explore what&apos;s available and stay tuned — more content launching soon.</p>
+      {/* ── Main ── */}
+      <div style={{ maxWidth: 900, margin: '0 auto', padding: '44px 24px 80px' }}>
+
+        {/* Welcome */}
+        <div style={{ marginBottom: 44 }}>
+          <h1 style={{ fontSize: 26, fontWeight: 600, color: C.ink, marginBottom: 4 }}>
+            Welcome back, {firstName}
+          </h1>
         </div>
 
-        <div className="card banner">
-          <div className="banner-inner">
-            <span className="banner-icon">🚀</span>
-            <div className="banner-text">
-              <h3>First Practice Problem is Live!</h3>
-              <p>Try our first market sizing problem and share your approach. Courses and more resources launching soon.</p>
-            </div>
-            <button className="btn btn-primary" onClick={handleShowProblemDetail} style={{ whiteSpace: 'nowrap' }}>Try it now →</button>
+        {/* ── Tier 1: Upcoming deadlines ── */}
+        <div style={{ marginBottom: 52 }}>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, marginBottom: 18 }}>
+            <h2 style={{ fontSize: 18, fontWeight: 600, color: C.ink, margin: 0 }}>
+              Upcoming deadlines
+            </h2>
+            <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.07em', textTransform: 'uppercase', color: C.red }}>
+              live from Airtable
+            </span>
           </div>
+
+          <DeadlinesTable deadlines={deadlines} />
         </div>
 
-        <div className="tabs">
-          <button className={`tab ${activeTab === "courses" ? "active" : ""}`} onClick={() => switchTab("courses")}>
-            <span className="tab-icon">📊</span> Courses
-          </button>
-          <button className={`tab ${activeTab === "practice" ? "active" : ""}`} onClick={() => switchTab("practice")}>
-            <span className="tab-icon">🧩</span> Practice
-          </button>
-          <button className={`tab ${activeTab === "resources" ? "active" : ""}`} onClick={() => switchTab("resources")}>
-            <span className="tab-icon">📚</span> Resources
-          </button>
-          <button className={`tab ${activeTab === "community" ? "active" : ""}`} onClick={() => switchTab("community")}>
-            <span className="tab-icon">💬</span> Community
-          </button>
-        </div>
+        {/* ── Tier 2: Interview prep ── */}
+        <div style={{ marginBottom: 52 }}>
+          <h2 style={{ fontSize: 18, fontWeight: 600, color: C.ink, marginBottom: 24 }}>
+            Interview prep
+          </h2>
 
-        <div className={`tab-content ${activeTab === "courses" ? "active" : ""}`}>
-          <div className="courses-grid">
-            <div className="card hoverable">
-              <div className="course-header">
-                <span className="course-icon">📊</span>
-                <span className="badge badge-locked">Coming Soon</span>
-              </div>
-              <h3 className="course-title">The Case Course</h3>
-              <p className="course-desc">Master case interview frameworks, mental math, and delivery from the ground up.</p>
-              <div className="course-tags">
-                <span className="course-tag">Frameworks</span>
-                <span className="course-tag">Market Sizing</span>
-                <span className="course-tag">Profitability</span>
-                <span className="course-tag">M&amp;A</span>
-              </div>
-              <div className="course-meta">
-                <span>8 modules</span>
-                <span>·</span>
-                <span>6 hours</span>
-              </div>
+          {/* Case sub-row */}
+          <div style={{ marginBottom: 28 }}>
+            <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.07em', textTransform: 'uppercase', color: C.muted, marginBottom: 12 }}>
+              Case
             </div>
-            <div className="card hoverable">
-              <div className="course-header">
-                <span className="course-icon">🎯</span>
-                <span className="badge badge-locked">Coming Soon</span>
+            <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
+
+              <Link href="/case-course" style={{ textDecoration: 'none', flex: '1 1 200px' }}>
+                <div style={{ ...cardBase, cursor: 'pointer' }}>
+                  <div style={{ fontSize: 15, fontWeight: 600, color: C.ink, marginBottom: 6 }}>
+                    Case Crash Course
+                  </div>
+                  <div style={{ fontSize: 13, color: C.body, lineHeight: 1.55, marginBottom: 14 }}>
+                    The fundamentals, start here
+                  </div>
+                  <span style={pillGreen}>Available now</span>
+                </div>
+              </Link>
+
+              <Link href="/library" style={{ textDecoration: 'none', flex: '1 1 200px' }}>
+                <div style={{ ...cardBase, cursor: 'pointer' }}>
+                  <div style={{ fontSize: 15, fontWeight: 600, color: C.ink, marginBottom: 6 }}>
+                    Case Library
+                  </div>
+                  <div style={{ fontSize: 13, color: C.body, lineHeight: 1.55, marginBottom: 14 }}>
+                    Practice cases, self-paced
+                  </div>
+                  <span style={pillBlue}>Growing weekly</span>
+                </div>
+              </Link>
+
+              <div style={{ ...cardBase, opacity: 0.7 }}>
+                <div style={{ fontSize: 15, fontWeight: 600, color: C.ink, marginBottom: 6 }}>
+                  Video Walkthroughs
+                </div>
+                <div style={{ fontSize: 13, color: C.body, lineHeight: 1.55, marginBottom: 14 }}>
+                  Full cases, end to end
+                </div>
+                <span style={pillNeutral}>Coming soon</span>
               </div>
-              <h3 className="course-title">Behaviorals Course</h3>
-              <p className="course-desc">Craft compelling stories and confidently ace the fit portion of your interview.</p>
-              <div className="course-tags">
-                <span className="course-tag">STAR Method</span>
-                <span className="course-tag">Leadership</span>
-                <span className="course-tag">Teamwork</span>
-                <span className="course-tag">Why Consulting</span>
-              </div>
-              <div className="course-meta">
-                <span>5 modules</span>
-                <span>·</span>
-                <span>3 hours</span>
-              </div>
+
             </div>
           </div>
-        </div>
 
-        <div className={`tab-content ${activeTab === "practice" ? "active" : ""}`}>
-          {!showProblemDetail ? (
-            <div className="card">
-              <div className="problem-list-item">
-                <div>
-                  <div className="problem-title-row">
-                    <h3>Wine Market Sizing</h3>
-                    <span className="badge badge-live">Live</span>
-                  </div>
-                  <div className="problem-meta">
-                    <span>Market Sizing</span>
-                    <span>·</span>
-                    <span>Intermediate</span>
-                  </div>
-                </div>
-                <button className="btn btn-primary" onClick={() => setShowProblemDetail(true)}>Start Problem →</button>
-              </div>
+          {/* Behavioral sub-row */}
+          <div>
+            <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.07em', textTransform: 'uppercase', color: C.muted, marginBottom: 12 }}>
+              Behavioral
             </div>
-          ) : (
-            <div className="card problem-card">
-              <div style={{ marginBottom: '8px' }}>
-                <span className="badge badge-live">Live Problem</span>
-              </div>
-              <h3 style={{ fontFamily: 'var(--font-brand)', fontSize: '24px', marginBottom: '8px', fontWeight: 700 }}>Wine Market Sizing</h3>
-              <p className="problem-meta" style={{ marginBottom: '24px' }}>Market Sizing · Intermediate</p>
-              <div className="problem-question">
-                <p>&quot;How many bottles of wine are sold in New Zealand each year?&quot;</p>
+            <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
+
+              <div style={{ ...cardBase, opacity: 0.7 }}>
+                <div style={{ fontSize: 15, fontWeight: 600, color: C.ink, marginBottom: 6 }}>
+                  Fit &amp; Behavioral Guide
+                </div>
+                <div style={{ fontSize: 13, color: C.body, lineHeight: 1.55, marginBottom: 14 }}>
+                  Story frameworks, common Qs
+                </div>
+                <span style={pillBlue}>Resources</span>
               </div>
 
-              {!answerSubmitted ? (
-                <div>
-                  <label className="answer-label">Walk through your approach and estimate:</label>
-                  <textarea
-                    className="answer-box"
-                    rows={6}
-                    placeholder="Start by segmenting the population of New Zealand..."
-                    value={answerText}
-                    onChange={(e) => setAnswerText(e.target.value)}
-                  />
-                  <div style={{ display: 'flex', gap: '12px', marginTop: '16px', flexWrap: 'wrap' }}>
-                    <button className="btn btn-primary" onClick={submitAnswer}>Submit Answer</button>
-                    <button className="btn btn-secondary" onClick={toggleHint}>Show Hint</button>
-                  </div>
-                  <div className={`hint-box ${showHint ? "visible" : ""}`}>
-                    💡 Think about population, drinking age demographics, consumption patterns, and channels (retail vs. hospitality).
-                  </div>
+              <div style={{ ...cardBase, opacity: 0.7 }}>
+                <div style={{ fontSize: 15, fontWeight: 600, color: C.ink, marginBottom: 6 }}>
+                  Behavioral Walkthrough
                 </div>
-              ) : (
-                <div className="success-box visible">
-                  <h4>Answer Submitted! ✓</h4>
-                  <p>A detailed walkthrough will be posted soon. In the meantime, discuss your approach with others in the community Slack!</p>
-                  <button className="btn btn-secondary" onClick={resetProblem} style={{ marginTop: '12px' }}>Try Again</button>
+                <div style={{ fontSize: 13, color: C.body, lineHeight: 1.55, marginBottom: 14 }}>
+                  Answering fit questions well
                 </div>
-              )}
-            </div>
-          )}
-          <p className="problem-note">New practice problems released weekly. Stay tuned for detailed walkthroughs.</p>
-        </div>
+                <span style={pillNeutral}>Coming soon</span>
+              </div>
 
-        <div className={`tab-content ${activeTab === "resources" ? "active" : ""}`}>
-          <div className="resources-grid">
-            <div className="card hoverable">
-              <div className="resource-header">
-                <span className="resource-icon">📄</span>
-                <span className="badge badge-locked">Coming Soon</span>
-              </div>
-              <h4 className="resource-title">Resume Guide</h4>
-              <p className="resource-desc">Consulting resume best practices &amp; templates</p>
-            </div>
-            <Link href="/library" className="card hoverable" style={{ textDecoration: 'none', color: 'inherit' }}>
-              <div className="resource-header">
-                <span className="resource-icon">📋</span>
-                <span className="badge badge-live">Live</span>
-              </div>
-              <h4 className="resource-title">Case Library</h4>
-              <p className="resource-desc">Curated case interviews to practice solo or with partners</p>
-            </Link>
-            <div className="card hoverable">
-              <div className="resource-header">
-                <span className="resource-icon">🤖</span>
-                <span className="badge badge-locked">Coming Soon</span>
-              </div>
-              <h4 className="resource-title">AI Resume Coach</h4>
-              <p className="resource-desc">Get AI-powered feedback on your resume</p>
-            </div>
-            <div className="card hoverable">
-              <div className="resource-header">
-                <span className="resource-icon">💡</span>
-                <span className="badge badge-locked">Coming Soon</span>
-              </div>
-              <h4 className="resource-title">Interview Question Bank</h4>
-              <p className="resource-desc">Common behavioral &amp; case questions</p>
+              {/* spacer so the two behavioral cards don't stretch to fill the full three-column width */}
+              <div style={{ flex: '1 1 200px', visibility: 'hidden' }} aria-hidden="true" />
+
             </div>
           </div>
         </div>
 
-        <div className={`tab-content ${activeTab === "community" ? "active" : ""}`}>
-          <div className="card community-card">
-            <span className="community-icon">💬</span>
-            <h3>Join the Community</h3>
-            <p>Connect with fellow aspiring consultants. Ask questions, find practice partners, share tips, and get direct access to Perry and the Case Academy team.</p>
-            <p className="small">We use Slack to keep things fast and familiar.</p>
+        {/* ── Tier 3: Application prep ── */}
+        <div style={{ marginBottom: 52 }}>
+          <h2 style={{ fontSize: 18, fontWeight: 600, color: C.ink, marginBottom: 20 }}>
+            Application prep
+          </h2>
+
+          {/* TODO: add files to /public/resources/resume-template.docx and /public/resources/cover-letter-template.docx */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+
             <a
-              href="https://join.slack.com/t/case-academy-group/shared_invite/zt-3rdo65h1w-Y7ehVZCRws8NHu7Mw29~ZQ"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn btn-primary"
-              style={{ padding: '14px 28px', fontSize: '15px' }}
+              href="/resources/resume-template.docx"
+              download
+              style={{ textDecoration: 'none' }}
             >
-              Join Slack Community →
+              <div style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                padding: '14px 18px', background: '#ffffff', border: `1px solid ${C.hairline}`,
+                borderRadius: 8,
+              }}>
+                <div>
+                  <span style={{ fontSize: 14, fontWeight: 500, color: C.ink }}>Resume Template</span>
+                  <span style={{ fontSize: 12, color: C.muted, marginLeft: 10 }}>Editable .docx</span>
+                </div>
+                <span style={{ fontSize: 16, color: C.ink }}>↓</span>
+              </div>
             </a>
+
+            <a
+              href="/resources/cover-letter-template.docx"
+              download
+              style={{ textDecoration: 'none' }}
+            >
+              <div style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                padding: '14px 18px', background: '#ffffff', border: `1px solid ${C.hairline}`,
+                borderRadius: 8,
+              }}>
+                <div>
+                  <span style={{ fontSize: 14, fontWeight: 500, color: C.ink }}>Cover Letter Template</span>
+                  <span style={{ fontSize: 12, color: C.muted, marginLeft: 10 }}>Editable .docx</span>
+                </div>
+                <span style={{ fontSize: 16, color: C.ink }}>↓</span>
+              </div>
+            </a>
+
           </div>
         </div>
 
-        <div className="footer">© 2026 Case Academy · Built by Perry Kramer</div>
+        {/* ── Footer ── */}
+        <div style={{
+          borderTop: `1px solid ${C.hairline}`, paddingTop: 24,
+          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16,
+          fontSize: 12, color: C.muted,
+        }}>
+          <span>© 2026 Case Academy · Built by Perry Kramer</span>
+          <span style={{ color: C.hairlineStrong }}>·</span>
+          <a
+            href="https://join.slack.com/t/case-academy-group/shared_invite/zt-3rdo65h1w-Y7ehVZCRws8NHu7Mw29~ZQ"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ color: C.muted, textDecoration: 'none' }}
+          >
+            Slack community
+          </a>
+        </div>
+
       </div>
     </div>
   );
