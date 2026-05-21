@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import { C } from "@/lib/tokens";
 import { Wordmark } from "@/components/Wordmark";
+import Link from 'next/link';
 
 const FAQS = [
   {
@@ -143,9 +144,9 @@ export default function LandingPage() {
             Pricing
           </a>
           <SignedOut>
-            <a href="/sign-in" style={{ color: C.muted, fontSize: 14, fontWeight: 400, textDecoration: "none" }}>
+            <Link href="/sign-in" style={{ color: C.muted, fontSize: 14, fontWeight: 400, textDecoration: "none" }}>
               Sign in
-            </a>
+            </Link>
           </SignedOut>
           <SignedIn>
             <a href="/dashboard" style={{ color: C.muted, fontSize: 14, fontWeight: 400, textDecoration: "none" }}>

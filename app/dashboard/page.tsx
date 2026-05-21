@@ -53,11 +53,11 @@ async function fetchDeadlines(): Promise<Deadline[]> {
     }));
 
     return mapped
-      .filter((d) => {
+      .filter((d: Deadline) => {
         const days = daysUntil(d.deadline);
         return Number.isFinite(days) && days >= 0;
       })
-      .sort((a, b) => daysUntil(a.deadline) - daysUntil(b.deadline));
+      .sort((a: Deadline, b: Deadline) => daysUntil(a.deadline) - daysUntil(b.deadline));
   } catch (err) {
     console.log('[deadlines] THREW →', err);
     return [];
@@ -66,12 +66,6 @@ async function fetchDeadlines(): Promise<Deadline[]> {
 
 function daysUntil(dateStr: string): number {
   return Math.ceil((new Date(dateStr).getTime() - Date.now()) / 86_400_000);
-}
-
-function deadlinePillStyle(days: number): CSSProperties {
-  if (days <= 14) return { background: '#FEE2E2', color: '#B91C1C', border: '1px solid #FECACA' };
-  if (days <= 30) return { background: '#FEF3C7', color: '#92400E', border: '1px solid #FDE68A' };
-  return { background: '#F0F3FB', color: C.muted, border: `1px solid ${C.hairline}` };
 }
 
 const cardBase: CSSProperties = {
