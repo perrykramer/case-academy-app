@@ -204,6 +204,17 @@ export default function LessonPlayer({ lessonSlug, youtubeId, alreadyCompleted }
         />
       </div>
 
+      <div style={{ marginBottom: '16px' }}>
+        <a
+          href={`https://www.youtube.com/watch?v=${youtubeId}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{ color: '#6B6B68', fontSize: '13px', textDecoration: 'none' }}
+        >
+          Trouble playing the video? Watch it on YouTube →
+        </a>
+      </div>
+
       <button
         onClick={markComplete}
         disabled={completed || marking}
