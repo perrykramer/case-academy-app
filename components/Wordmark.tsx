@@ -1,32 +1,34 @@
-import { C } from "@/lib/tokens";
-
-export function Wordmark({ fontSize = 17 }: { fontSize?: number }) {
+export function Wordmark(_props: { fontSize?: number } = {}) {
   return (
-    <span style={{ position: "relative", display: "inline-block", paddingBottom: 6 }}>
-      <span
+    <svg
+      width="280"
+      height="48"
+      viewBox="0 0 280 48"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      role="img"
+      aria-label="Case Academy"
+    >
+      <text
+        x="0"
+        y="34"
         style={{
-          fontFamily: "var(--font-inter), Inter, sans-serif",
-          fontWeight: 500,
-          fontSize,
-          color: C.ink,
-          letterSpacing: "-0.012em",
+          fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif",
+          fontWeight: 700,
+          fontSize: "34px",
+          letterSpacing: "-0.01em",
         }}
+        fill="#1e3a5f"
       >
         Case Academy
-      </span>
-      <svg
-        style={{ position: "absolute", left: 0, bottom: 0, width: "100%", height: 6 }}
-        viewBox="0 0 130 6"
-        preserveAspectRatio="none"
-      >
-        <path
-          d="M 2 3 Q 35 5, 65 3 T 128 3"
-          stroke={C.red}
-          strokeWidth="1.6"
-          fill="none"
-          strokeLinecap="round"
-        />
-      </svg>
-    </span>
+      </text>
+      <path
+        d="M255 17L265 7M265 7H257M265 7V15"
+        stroke="#f59e0b"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
   );
 }

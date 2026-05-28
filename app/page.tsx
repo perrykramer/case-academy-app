@@ -14,20 +14,8 @@ const FAQS = [
     a: "The Case Crash Course is fully available today. The case library is live and growing every week, and video walkthroughs are on the way. As a founding member you get everything the moment it ships — plus weekly office hours during the build.",
   },
   {
-    q: "Why is it $9.99 when it'll be $29 later?",
-    a: "Founding members are getting in while I'm still building. The $9.99 rate is my thank-you — it's locked for life, even after the price rises to $29 at full launch. You're betting on the trajectory, and I'm rewarding you for it.",
-  },
-  {
-    q: "What are the office hours?",
-    a: "A weekly group call during the build phase. Bring your resume, your questions, or a case you want to run. They're recorded and added to the library, so you get the value even if you can't make it live. This is a founding-member perk during the build.",
-  },
-  {
     q: "I'm a rising sophomore and don't know what a case is. Is this for me?",
-    a: "Yes — explicitly. The Crash Course starts with 'what is consulting' before it ever touches a framework. The earlier you start, the more ready you'll be by recruiting season.",
-  },
-  {
-    q: "What makes Case Academy different?",
-    a: "I just left BCG — I sat in the analyst seat last year, not a decade ago. And it's self-paced and affordable: everything you need in one place, growing every week, at a fraction of what coaching costs.",
+    a: "Yes! The Crash Course starts with 'what is consulting' before it ever touches a framework. The earlier you start, the more ready you'll be by recruiting season.",
   },
   {
     q: "Can I cancel anytime?",
@@ -46,7 +34,7 @@ function RedCheck() {
     >
       <path
         d="M 2 7 L 6 11 L 12 3"
-        stroke="#C8302E"
+        stroke="#f59e0b"
         strokeWidth="2"
         fill="none"
         strokeLinecap="round"
@@ -169,34 +157,6 @@ export default function LandingPage() {
         }}
       >
         <div style={{ maxWidth: 720, margin: "0 auto" }}>
-          {/* Founding membership badge */}
-          <div
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 6,
-              background: "rgba(200,48,46,0.08)",
-              color: C.red,
-              borderRadius: 999,
-              padding: "4px 12px",
-              fontSize: 11,
-              fontWeight: 500,
-              letterSpacing: "0.08em",
-              marginBottom: 20,
-            }}
-          >
-            <span
-              style={{
-                width: 7,
-                height: 7,
-                borderRadius: "50%",
-                background: C.red,
-                flexShrink: 0,
-              }}
-            />
-            FOUNDING MEMBERSHIP NOW OPEN
-          </div>
-
           <h1
             className="lp-hero-h1"
             style={{
@@ -208,7 +168,7 @@ export default function LandingPage() {
               maxWidth: 640,
             }}
           >
-            Everything you need to go from{" "}
+            Go from{" "}
             <span style={{ position: "relative", display: "inline-block" }}>
               &ldquo;what&apos;s consulting?&rdquo;
               <svg
@@ -224,7 +184,7 @@ export default function LandingPage() {
               >
                 <path
                   d="M 4 6 Q 60 2, 120 6 T 236 5"
-                  stroke="#C8302E"
+                  stroke="#f59e0b"
                   strokeWidth="2"
                   fill="none"
                   strokeLinecap="round"
@@ -243,9 +203,7 @@ export default function LandingPage() {
               maxWidth: 600,
             }}
           >
-            A self-paced consulting prep platform built by an Ex-BCG consultant —
-            the crash course, the case library, and the walkthroughs I wish I&apos;d
-            had as a sophomore. All in one place, growing every week.
+            Consulting prep platform built by a former BCG consultant
           </p>
 
           <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 16 }}>
@@ -260,62 +218,6 @@ export default function LandingPage() {
           <p style={{ fontSize: 11, color: C.muted, letterSpacing: "0.06em" }}>
             Founding rate locked for life · price rises to $29 at full launch · cancel anytime
           </p>
-        </div>
-      </section>
-
-      {/* ── BUILDING IN PUBLIC ── */}
-      <section
-        className="lp-section"
-        style={{ background: "rgba(27,61,143,0.03)" }}
-      >
-        <div style={{ maxWidth: 760, margin: "0 auto" }}>
-          <p
-            style={{
-              color: C.red,
-              fontSize: 11,
-              fontWeight: 500,
-              letterSpacing: "0.12em",
-              marginBottom: 12,
-            }}
-          >
-            BUILDING IN PUBLIC
-          </p>
-          <h2
-            style={{
-              color: C.ink,
-              fontSize: 36,
-              fontWeight: 500,
-              letterSpacing: "-0.015em",
-              lineHeight: 1.1,
-              marginBottom: 24,
-            }}
-          >
-            I&apos;m building this in the open — and you can get in early.
-          </h2>
-          <div
-            style={{
-              fontFamily: "var(--font-source-serif-4), 'Source Serif 4', Georgia, serif",
-              fontSize: 17,
-              lineHeight: 1.6,
-              color: C.body,
-              display: "flex",
-              flexDirection: "column",
-              gap: 20,
-              maxWidth: 640,
-            }}
-          >
-            <p>
-              Case Academy is live and growing. The Case Crash Course is here today.
-              The case library and video walkthroughs are being added week by week —
-              and founding members get everything as it ships.
-            </p>
-            <p>
-              As a founding member, you also get weekly group office hours with me
-              during the build phase — bring your resume, your questions, a case you
-              want to run — and you&apos;ll help shape what gets built next. Lock the
-              founding rate now and it&apos;s yours for life.
-            </p>
-          </div>
         </div>
       </section>
 
