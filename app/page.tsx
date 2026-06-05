@@ -125,11 +125,11 @@ export default function LandingPage() {
           <a href="#whats-inside" style={{ color: C.body, fontSize: 14, fontWeight: 500, textDecoration: "none" }}>
             What&apos;s inside
           </a>
+          <a href="#pricing" style={{ color: C.body, fontSize: 14, fontWeight: 500, textDecoration: "none" }}>
+            Membership
+          </a>
           <a href="#why" style={{ color: C.body, fontSize: 14, fontWeight: 500, textDecoration: "none" }}>
             Why Case Academy
-          </a>
-          <a href="#pricing" style={{ color: C.body, fontSize: 14, fontWeight: 500, textDecoration: "none" }}>
-            Pricing
           </a>
           <SignedOut>
             <Link href="/sign-in" style={{ color: C.muted, fontSize: 14, fontWeight: 400, textDecoration: "none" }}>
@@ -215,26 +215,12 @@ export default function LandingPage() {
             </a>
           </div>
 
-          <p style={{ fontSize: 11, color: C.muted, letterSpacing: "0.06em" }}>
-            Founding rate locked for life · price rises to $29 at full launch · cancel anytime
-          </p>
         </div>
       </section>
 
       {/* ── WHAT'S INSIDE ── */}
       <section id="whats-inside" className="lp-section">
         <div style={{ maxWidth: 900, margin: "0 auto" }}>
-          <p
-            style={{
-              color: C.red,
-              fontSize: 11,
-              fontWeight: 500,
-              letterSpacing: "0.12em",
-              marginBottom: 12,
-            }}
-          >
-            WHAT&apos;S INSIDE
-          </p>
           <h2
             style={{
               color: C.ink,
@@ -245,7 +231,7 @@ export default function LandingPage() {
               marginBottom: 12,
             }}
           >
-            What&apos;s inside Case Academy.
+            What&apos;s inside
           </h2>
           <p
             style={{
@@ -394,17 +380,6 @@ export default function LandingPage() {
         style={{ background: "rgba(27,61,143,0.03)" }}
       >
         <div style={{ maxWidth: 760, margin: "0 auto" }}>
-          <p
-            style={{
-              color: C.red,
-              fontSize: 11,
-              fontWeight: 500,
-              letterSpacing: "0.12em",
-              marginBottom: 12,
-            }}
-          >
-            PRICING
-          </p>
           <h2
             style={{
               color: C.ink,
@@ -415,7 +390,7 @@ export default function LandingPage() {
               marginBottom: 32,
             }}
           >
-            One membership. Everything included.
+            Membership
           </h2>
 
           <div
@@ -473,7 +448,6 @@ export default function LandingPage() {
                 "Video walkthroughs as they're released",
                 "Weekly group office hours during the build phase",
                 "A direct say in what gets built next",
-                "Founding rate locked for life",
               ].map((f) => (
                 <li
                   key={f}
@@ -545,17 +519,6 @@ export default function LandingPage() {
 
             {/* Right: copy */}
             <div>
-              <p
-                style={{
-                  color: C.red,
-                  fontSize: 11,
-                  fontWeight: 500,
-                  letterSpacing: "0.12em",
-                  marginBottom: 12,
-                }}
-              >
-                WHY CASE ACADEMY
-              </p>
               <h2
                 style={{
                   color: C.ink,
@@ -605,17 +568,6 @@ export default function LandingPage() {
       {/* ── FAQ ── */}
       <section className="lp-section" style={{ background: "rgba(27,61,143,0.02)" }}>
         <div style={{ maxWidth: 760, margin: "0 auto" }}>
-          <p
-            style={{
-              color: C.red,
-              fontSize: 11,
-              fontWeight: 500,
-              letterSpacing: "0.12em",
-              marginBottom: 12,
-            }}
-          >
-            FAQ
-          </p>
           <h2
             style={{
               color: C.ink,
@@ -626,7 +578,7 @@ export default function LandingPage() {
               marginBottom: 40,
             }}
           >
-            Honest answers.
+            FAQ
           </h2>
           <div style={{ borderTop: `1px solid ${C.hairline}` }}>
             {FAQS.map((faq, i) => (
@@ -703,17 +655,6 @@ export default function LandingPage() {
         style={{ background: "rgba(27,61,143,0.04)" }}
       >
         <div style={{ maxWidth: 760, margin: "0 auto" }}>
-          <p
-            style={{
-              color: C.red,
-              fontSize: 11,
-              fontWeight: 500,
-              letterSpacing: "0.12em",
-              marginBottom: 12,
-            }}
-          >
-            START FREE
-          </p>
           <h2
             style={{
               color: C.ink,
@@ -724,7 +665,7 @@ export default function LandingPage() {
               marginBottom: 16,
             }}
           >
-            Get started with free resources today.
+            Start for free today
           </h2>
           <p
             style={{
@@ -779,14 +720,9 @@ export default function LandingPage() {
                   style={{ display: "flex", alignItems: "flex-start", gap: 10 }}
                 >
                   <RedCheck />
-                  <div>
-                    <span style={{ fontWeight: 500, color: C.ink, fontSize: 14 }}>
-                      {item.title}
-                    </span>
-                    <span style={{ color: C.muted, fontSize: 13 }}>
-                      {" "}— {item.desc}
-                    </span>
-                  </div>
+                  <span style={{ fontWeight: 500, color: C.ink, fontSize: 14 }}>
+                    {item.title}
+                  </span>
                 </li>
               ))}
             </ul>
@@ -826,17 +762,6 @@ export default function LandingPage() {
 
       {/* ── FINAL CTA ── */}
       <section className="lp-section" style={{ textAlign: "center" }}>
-        <p
-          style={{
-            color: C.red,
-            fontSize: 11,
-            fontWeight: 500,
-            letterSpacing: "0.12em",
-            marginBottom: 16,
-          }}
-        >
-          READY?
-        </p>
         <h2
           style={{
             color: C.ink,
@@ -847,7 +772,7 @@ export default function LandingPage() {
             marginBottom: 32,
           }}
         >
-          Lock your founding rate.
+          Join today
         </h2>
         <a href="#" style={btnPrimary}>
           Join today — $9.99/mo
