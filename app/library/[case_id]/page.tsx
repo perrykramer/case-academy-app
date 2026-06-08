@@ -8,6 +8,7 @@ import { getCaseById, getAllCaseIds, parseCaseContent } from '@/lib/cases';
 import { hasAccess } from '@/lib/access';
 import CaseSectionReveal from '@/components/CaseSectionReveal';
 import CaseLockedPreview from '@/components/CaseLockedPreview';
+import { C } from '@/lib/tokens';
 
 export async function generateStaticParams() {
   return getAllCaseIds().map((case_id) => ({ case_id }));
@@ -34,25 +35,27 @@ export default async function CaseDetailPage({ params }: Props) {
   const isLocked = !frontmatter.free_preview && !userHasAccess;
 
   return (
-    <div className="main">
-      <div style={{ marginBottom: '24px' }}>
-        <Link
-          href="/library"
-          style={{ color: '#f59e0b', textDecoration: 'none', fontSize: '14px', fontWeight: 600 }}
-        >
-          ← Back to Case Library
-        </Link>
-      </div>
+    <div style={{ minHeight: '100vh', backgroundColor: C.canvas }}>
+      <div style={{ maxWidth: '900px', margin: '0 auto', padding: '40px 20px 60px' }}>
 
-      <article
-        className="case-content prose prose-slate max-w-none"
-        style={{
-          background: '#ffffff',
-          padding: '40px',
-          borderRadius: '12px',
-          boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
-        }}
-      >
+        <div style={{ marginBottom: '24px' }}>
+          <Link
+            href="/library"
+            style={{ color: C.muted, textDecoration: 'none', fontSize: '14px' }}
+          >
+            ← Back to Case Library
+          </Link>
+        </div>
+
+        <article
+          className="case-content prose prose-slate max-w-none"
+          style={{
+            background: '#ffffff',
+            padding: '40px',
+            borderRadius: '12px',
+            border: `1px solid ${C.hairline}`,
+          }}
+        >
         <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]}>{intro}</ReactMarkdown>
 
         <h2>Prompt</h2>
@@ -70,7 +73,9 @@ export default async function CaseDetailPage({ params }: Props) {
             <CaseSectionReveal sections={sections} />
           </>
         )}
-      </article>
+        </article>
+
+      </div>
     </div>
   );
 }

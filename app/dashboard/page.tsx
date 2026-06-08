@@ -121,13 +121,10 @@ export default async function DashboardPage() {
 
         {/* ── Tier 1: Upcoming deadlines ── */}
         <div style={{ marginBottom: 52 }}>
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, marginBottom: 18 }}>
+          <div style={{ marginBottom: 18 }}>
             <h2 style={{ fontSize: 18, fontWeight: 600, color: C.ink, margin: 0 }}>
               Upcoming deadlines
             </h2>
-            <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.07em', textTransform: 'uppercase', color: C.red }}>
-              live from Airtable
-            </span>
           </div>
 
           <DeadlinesTable deadlines={deadlines} />
