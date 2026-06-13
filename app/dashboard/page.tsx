@@ -167,15 +167,17 @@ export default async function DashboardPage() {
                 </div>
               </Link>
 
-              <div style={{ ...cardBase, opacity: 0.7 }}>
-                <div style={{ fontSize: 15, fontWeight: 600, color: C.ink, marginBottom: 6 }}>
-                  Video Walkthroughs
+              <a href="/resources/case-rubric.pdf" download style={{ textDecoration: 'none', flex: '1 1 200px' }}>
+                <div style={{ ...cardBase, cursor: 'pointer' }}>
+                  <div style={{ fontSize: 15, fontWeight: 600, color: C.ink, marginBottom: 6 }}>
+                    Case Rubric
+                  </div>
+                  <div style={{ fontSize: 13, color: C.body, lineHeight: 1.55, marginBottom: 14 }}>
+                    How interviewers score you
+                  </div>
+                  <span style={pillGreen}>Download PDF</span>
                 </div>
-                <div style={{ fontSize: 13, color: C.body, lineHeight: 1.55, marginBottom: 14 }}>
-                  Full cases, end to end
-                </div>
-                <span style={pillNeutral}>Coming soon</span>
-              </div>
+              </a>
 
             </div>
           </div>
