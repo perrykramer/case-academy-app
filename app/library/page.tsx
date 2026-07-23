@@ -56,12 +56,16 @@ export default function LibraryPage() {
             No cases available yet. Check back soon!
           </div>
         ) : (
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px' }}>
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
+            gap: '16px',
+          }}>
             {cases.map((c) => (
               <Link
                 key={c.case_id}
                 href={`/library/${c.case_id}`}
-                style={{ textDecoration: 'none', flex: '1 1 260px', minWidth: 0 }}
+                style={{ textDecoration: 'none', minWidth: 0 }}
               >
                 <div style={{
                   background: '#ffffff',
