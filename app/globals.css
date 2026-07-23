@@ -381,3 +381,49 @@ textarea::placeholder { color: var(--muted); }
   margin: 0;
   background: transparent;
 }
+
+/* ============================================================
+   Case framework boxes
+   Add this to your global stylesheet (same file as .case-calculation).
+   Renders the framework's top-level branches as a responsive grid of
+   boxes: each header becomes a navy-titled box, each item a bullet.
+   ============================================================ */
+
+.case-framework-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin: 20px 0;
+}
+
+.case-framework-box {
+  background: #FBFAF5;                 /* canvas tint */
+  border: 1px solid #e5e1d8;          /* hairline */
+  border-top: 3px solid #1e3a5f;      /* navy accent bar */
+  border-radius: 8px;
+  padding: 16px 18px;
+}
+
+.case-framework-box h4 {
+  margin: 0 0 10px;
+  color: #1e3a5f;                     /* navy */
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+.case-framework-box ul {
+  margin: 0;
+  padding-left: 18px;
+  list-style: disc;
+}
+
+.case-framework-box li {
+  margin: 6px 0;
+  font-size: 14px;
+  line-height: 1.45;
+  color: #374151;
+}
+
+/* On narrow screens the auto-fit grid collapses to a single column
+   automatically; no extra media query needed. */

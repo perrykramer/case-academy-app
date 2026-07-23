@@ -16,14 +16,11 @@ export default function CaseSectionReveal({ sections }: Props) {
 
   if (sections.length === 0) return null;
 
-  const nextSection: CaseSection | null = sections[revealedCount] ?? null;
   const allRevealed = revealedCount === sections.length;
-  const isFrameworkNext = nextSection?.heading === 'Framework';
+  const frameworkIndex = sections.findIndex(s => s.heading.startsWith('Framework'));
 
   return (
     <div className="case-reveal-stack">
-      <FrameworkTimer isVisible={isFrameworkNext} />
-
       {sections.map((section, index) => {
         const isRevealed = index < revealedCount;
         const isNext = index === revealedCount;
@@ -40,15 +37,18 @@ export default function CaseSectionReveal({ sections }: Props) {
         }
 
         if (isNext) {
+          const isFramework = index === frameworkIndex;
           return (
-            <button
-              key={section.heading}
-              onClick={() => setRevealedCount(revealedCount + 1)}
-              className="case-reveal-button"
-            >
-              <span className="case-reveal-button-label">Reveal: {section.heading}</span>
-              <span className="case-reveal-button-arrow">→</span>
-            </button>
+            <div key={section.heading}>
+              {isFramework && <FrameworkTimer isVisible={true} />}
+              <button
+                onClick={() => setRevealedCount(revealedCount + 1)}
+                className="case-reveal-button"
+              >
+                <span className="case-reveal-button-label">Reveal: {section.heading}</span>
+                <span className="case-reveal-button-arrow">→</span>
+              </button>
+            </div>
           );
         }
 
