@@ -1,5 +1,7 @@
 import Link from 'next/link';
+import { auth } from '@clerk/nextjs/server';
 import { getAllCases } from '@/lib/cases';
+import { getAllCasebooks } from '@/lib/casebooks';
 import { C } from '@/lib/tokens';
 
 export const metadata = {
@@ -7,8 +9,11 @@ export const metadata = {
   description: 'Practice consulting case interviews with structured, curated cases from top sources.',
 };
 
-export default function LibraryPage() {
+export default async function LibraryPage() {
   const cases = getAllCases();
+  const casebooks = getAllCasebooks();
+  const { userId } = await auth();
+  const signedIn = !!userId;
 
   return (
     <div style={{ minHeight: '100vh', backgroundColor: C.canvas }}>
@@ -141,6 +146,69 @@ export default function LibraryPage() {
             ))}
           </div>
         )}
+
+        {/* ── Casebooks ── */}
+        <section style={{ marginTop: '48px' }}>
+          <h2 style={{
+            fontFamily: 'var(--font-inter), Inter, sans-serif',
+            fontSize: '22px',
+            fontWeight: 700,
+            color: C.ink,
+            marginBottom: '6px',
+          }}>
+            Casebooks
+          </h2>
+          <p style={{ color: C.body, fontSize: '14px', marginBottom: '16px' }}>
+            Free casebooks from MBA consulting clubs, as PDFs.
+            {signedIn ? ' Each one opens in a new tab.' : ' Sign in to open them.'}
+          </p>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            {casebooks.map((b) => (
+              <a
+                key={b.slug}
+                href={`/library/casebooks/${b.slug}`}
+                target={signedIn ? '_blank' : undefined}
+                rel={signedIn ? 'noopener noreferrer' : undefined}
+                aria-label={`${b.school} casebook ${b.year} (PDF)`}
+                style={{ textDecoration: 'none' }}
+              >
+                <div style={{
+                  background: '#ffffff',
+                  border: `1px solid ${C.hairline}`,
+                  borderRadius: '12px',
+                  padding: '14px 18px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                }}>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: '15px', fontWeight: 600, color: C.ink }}>
+                      {b.school}
+                    </div>
+                    {b.detail && (
+                      <div style={{
+                        fontSize: '13px', color: C.body,
+                        overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                      }}>
+                        {b.detail}
+                      </div>
+                    )}
+                  </div>
+                  <span style={{
+                    flexShrink: 0, fontSize: 11, fontWeight: 500, padding: '2px 8px',
+                    borderRadius: 12, background: 'rgba(27,61,143,0.07)', color: C.muted,
+                  }}>
+                    {b.year}
+                  </span>
+                  <span style={{ flexShrink: 0, fontSize: '12px', fontWeight: 600, color: C.ink }}>
+                    PDF ↗
+                  </span>
+                </div>
+              </a>
+            ))}
+          </div>
+        </section>
       </div>
 
     </div>
