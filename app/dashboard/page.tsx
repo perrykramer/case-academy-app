@@ -239,18 +239,7 @@ export default async function DashboardPage({
           <MembershipCard m={membership} />
         </div>
 
-        {/* ── Tier 1: Upcoming deadlines ── */}
-        <div style={{ marginBottom: 52 }}>
-          <div style={{ marginBottom: 18 }}>
-            <h2 style={{ fontSize: 18, fontWeight: 600, color: C.ink, margin: 0 }}>
-              Upcoming deadlines
-            </h2>
-          </div>
-
-          <DeadlinesTable deadlines={deadlines} />
-        </div>
-
-        {/* ── Tier 2: Interview prep ── */}
+        {/* ── Tier 1: Interview prep ── */}
         <div style={{ marginBottom: 52 }}>
           <h2 style={{ fontSize: 18, fontWeight: 600, color: C.ink, marginBottom: 24 }}>
             Interview prep
@@ -336,7 +325,7 @@ export default async function DashboardPage({
           </div>
         </div>
 
-        {/* ── Tier 3: Application prep ── */}
+        {/* ── Tier 2: Application prep ── */}
         <div style={{ marginBottom: 52 }}>
           <h2 style={{ fontSize: 18, fontWeight: 600, color: C.ink, marginBottom: 20 }}>
             Application prep
@@ -382,6 +371,17 @@ export default async function DashboardPage({
             </a>
 
           </div>
+        </div>
+
+        {/* ── Tier 3: Upcoming deadlines ── */}
+        <div style={{ marginBottom: 52 }}>
+          <div style={{ marginBottom: 18 }}>
+            <h2 style={{ fontSize: 18, fontWeight: 600, color: C.ink, margin: 0 }}>
+              Upcoming deadlines
+            </h2>
+          </div>
+
+          <DeadlinesTable deadlines={deadlines} />
         </div>
 
         {/* ── Footer ── */}
