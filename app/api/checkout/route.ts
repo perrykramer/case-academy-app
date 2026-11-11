@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { currentUser } from '@clerk/nextjs/server';
 import { stripe } from '@/lib/stripe';
 import { getMembership } from '@/lib/access';
-import { PRICE_CURRENT, appUrl, createPortalUrl, getOrCreateCustomer } from '@/lib/billing';
+import { appUrl, createPortalUrl, getCurrentPriceId, getOrCreateCustomer } from '@/lib/billing';
 
 export async function POST() {
   try {
@@ -16,8 +16,16 @@ export async function POST() {
       return NextResponse.json({ error: 'No email on user account' }, { status: 400 });
     }
 
-    if (!PRICE_CURRENT) {
-      return NextResponse.json({ error: 'Price ID not configured' }, { status: 500 });
+    const priceId = await getCurrentPriceId();
+    if (!priceId) {
+      const mode = process.env.STRIPE_SECRET_KEY?.startsWith('sk_live') ? 'live' : 'test';
+      console.error(
+        `[checkout] No price: STRIPE_PRICE_CURRENT is unset and no active Stripe price has lookup key "founding_monthly_999" in ${mode} mode. Run scripts/stripe-setup.mjs with this environment's Stripe key.`
+      );
+      return NextResponse.json(
+        { error: 'Checkout is temporarily unavailable. Please try again shortly.' },
+        { status: 500 }
+      );
     }
 
     // Already a member? Send them to manage their subscription instead of paying twice.
@@ -36,7 +44,7 @@ export async function POST() {
       mode: 'subscription',
       customer: customerId,
       client_reference_id: user.id,
-      line_items: [{ price: PRICE_CURRENT, quantity: 1 }],
+      line_items: [{ price: priceId, quantity: 1 }],
       subscription_data: { metadata: { clerk_user_id: user.id } },
       metadata: { clerk_user_id: user.id, user_email: email },
       allow_promotion_codes: true,
