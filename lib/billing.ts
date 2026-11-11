@@ -4,8 +4,39 @@ import { stripe } from './stripe';
 import { supabaseAdmin } from './supabase';
 import { findUserRow } from './access';
 
-export const PRICE_CURRENT = process.env.STRIPE_PRICE_CURRENT;
-export const PRICE_FOUNDING = process.env.STRIPE_PRICE_FOUNDING;
+// The founding price is created by scripts/stripe-setup.mjs with this lookup key,
+// in both test and live mode, so it can be found without any env var.
+export const FOUNDING_LOOKUP_KEY = 'founding_monthly_999';
+
+const envPrice = (name: string) => process.env[name]?.trim() || undefined;
+const PRICE_FOUNDING = envPrice('STRIPE_PRICE_FOUNDING');
+
+let cachedLookupPrice: string | null = null;
+
+/**
+ * The price new subscribers are charged. Uses STRIPE_PRICE_CURRENT when set
+ * (e.g. the $29 price at full launch); otherwise falls back to the founding
+ * price found by lookup key. Returns null if neither exists.
+ */
+export async function getCurrentPriceId(): Promise<string | null> {
+  const fromEnv = envPrice('STRIPE_PRICE_CURRENT');
+  if (fromEnv) return fromEnv;
+
+  if (cachedLookupPrice) return cachedLookupPrice;
+  const { data } = await stripe.prices.list({ lookup_keys: [FOUNDING_LOOKUP_KEY], active: true, limit: 1 });
+  cachedLookupPrice = data[0]?.id ?? null;
+  return cachedLookupPrice;
+}
+
+/** True if this is the $9.99 founding price (by env ID, lookup key, or metadata). */
+function isFoundingPrice(price: Stripe.Price | undefined): boolean {
+  if (!price) return false;
+  return (
+    (!!PRICE_FOUNDING && price.id === PRICE_FOUNDING) ||
+    price.lookup_key === FOUNDING_LOOKUP_KEY ||
+    price.metadata?.founding === 'true'
+  );
+}
 
 export function appUrl(): string {
   return (process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000').replace(/\/$/, '');
@@ -25,9 +56,9 @@ function getPeriodEnd(subscription: Stripe.Subscription): number | null {
   return subscription.current_period_end ?? null;
 }
 
-function planName(priceId: string | undefined, interval: string | undefined): string {
-  if (priceId && priceId === PRICE_FOUNDING) return 'founding';
-  return interval === 'year' ? 'annual' : 'monthly';
+function planName(price: Stripe.Price | undefined): string {
+  if (isFoundingPrice(price)) return 'founding';
+  return price?.recurring?.interval === 'year' ? 'annual' : 'monthly';
 }
 
 function idOf(x: string | { id: string } | null | undefined): string | null {
@@ -50,8 +81,7 @@ export async function syncSubscription(
 
   const customerId = idOf(subscription.customer)!;
   const item = subscription.items.data[0];
-  const priceId = item?.price?.id;
-  const isFounding = !!priceId && priceId === PRICE_FOUNDING;
+  const isFounding = isFoundingPrice(item?.price);
 
   let clerkUserId = hint.clerkUserId || subscription.metadata?.clerk_user_id || null;
   let email = hint.email?.toLowerCase().trim() || null;
@@ -68,7 +98,7 @@ export async function syncSubscription(
     stripe_customer_id: customerId,
     stripe_subscription_id: subscription.id,
     subscription_status: subscription.status,
-    subscription_plan: planName(priceId, item?.price?.recurring?.interval),
+    subscription_plan: planName(item?.price),
     current_period_end: toIsoOrNull(getPeriodEnd(subscription)),
     cancel_at_period_end: subscription.cancel_at_period_end || !!subscription.cancel_at,
   };
