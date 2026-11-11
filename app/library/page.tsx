@@ -166,8 +166,7 @@ export default async function LibraryPage() {
             Casebooks
           </h2>
           <p style={{ color: C.body, fontSize: '14px', marginBottom: '16px' }}>
-            Free casebooks from MBA consulting clubs, as PDFs.
-            {signedIn ? ' Each one opens in a new tab.' : ' Sign in to open them.'}
+            Casebooks from MBA consulting clubs, as PDFs.
           </p>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
