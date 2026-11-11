@@ -22,7 +22,7 @@ export default function CaseLockedPreview({ sections }: Props) {
           recommendation for this case — plus the full library of practice cases.
         </p>
         <Link href="/subscribe" className="case-paywall-button">
-          Subscribe — $29/month
+          Join as a founding member — $9.99/mo
         </Link>
       </div>
     </div>

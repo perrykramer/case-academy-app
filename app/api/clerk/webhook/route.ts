@@ -68,35 +68,39 @@ export async function POST(req: NextRequest) {
           break;
         }
 
-        // Upsert the user — if they already exist (e.g., grandfathered pilot user),
-        // don't overwrite their subscription status
+        // Create the row, or link an existing one (e.g. a pilot user) to this
+        // Clerk account. Only email + clerk_user_id are written, so existing
+        // subscription fields are untouched; new rows get column defaults.
         const { error } = await supabaseAdmin
           .from('users')
-          .upsert(
-            {
-              email,
-              subscription_status: 'none',
-              founding_member: false,
-              is_tester: false,
-            },
-            {
-              onConflict: 'email',
-              ignoreDuplicates: true, // Don't overwrite existing rows
-            }
-          );
+          .upsert({ email, clerk_user_id: event.data.id }, { onConflict: 'email' });
 
         if (error) {
-          console.error('Failed to create user row:', error);
+          console.error('Failed to create/link user row:', error);
           throw error;
         }
 
-        console.log(`[clerk-webhook] User row created/exists for ${email}`);
+        console.log(`[clerk-webhook] User row created/linked for ${email}`);
         break;
       }
 
       case 'user.updated': {
-        // Could sync email changes here if needed; for now just log
-        console.log(`[clerk-webhook] User updated: ${event.data.id} (no action)`);
+        // Keep the stored email in sync with the Clerk primary email.
+        const primaryEmailId = event.data.primary_email_address_id;
+        const email = event.data.email_addresses
+          ?.find((e) => e.id === primaryEmailId)
+          ?.email_address?.toLowerCase()
+          .trim();
+        if (!email) break;
+
+        const { error } = await supabaseAdmin
+          .from('users')
+          .update({ email })
+          .eq('clerk_user_id', event.data.id);
+        if (error) {
+          // Most likely another row already owns that email; log and move on.
+          console.error('Failed to sync email change:', error);
+        }
         break;
       }
 

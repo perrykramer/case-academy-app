@@ -141,9 +141,9 @@ export default function LandingPage() {
               Go to dashboard
             </a>
           </SignedIn>
-          <a href="#" style={btnPrimary}>
+          <Link href="/sign-up" style={btnPrimary}>
             Join today
-          </a>
+          </Link>
         </div>
       </nav>
 
@@ -207,9 +207,9 @@ export default function LandingPage() {
           </p>
 
           <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 16 }}>
-            <a href="#" style={btnPrimary}>
+            <Link href="/sign-up" style={btnPrimary}>
               Join today — $9.99/mo
-            </a>
+            </Link>
             <a href="#whats-inside" style={btnSecondary}>
               See what&apos;s inside →
             </a>
@@ -465,9 +465,9 @@ export default function LandingPage() {
               ))}
             </ul>
 
-            <a href="#" style={{ ...btnPrimary, display: "block", textAlign: "center" }}>
+            <Link href="/sign-up" style={{ ...btnPrimary, display: "block", textAlign: "center" }}>
               Join today
-            </a>
+            </Link>
             <p
               style={{
                 fontSize: 11,
@@ -774,9 +774,9 @@ export default function LandingPage() {
         >
           Join today
         </h2>
-        <a href="#" style={btnPrimary}>
+        <Link href="/sign-up" style={btnPrimary}>
           Join today — $9.99/mo
-        </a>
+        </Link>
       </section>
 
       {/* ── FOOTER ── */}

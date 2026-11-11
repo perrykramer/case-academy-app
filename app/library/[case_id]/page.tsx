@@ -29,9 +29,9 @@ export default async function CaseDetailPage({ params }: Props) {
   const { frontmatter, content } = caseData;
   const { intro, prompt, sections } = parseCaseContent(content);
 
-  const { sessionClaims } = await auth();
+  const { userId, sessionClaims } = await auth();
   const email = sessionClaims?.email as string | undefined;
-  const userHasAccess = await hasAccess(email);
+  const userHasAccess = userId ? await hasAccess({ userId, email }) : false;
   const isLocked = !frontmatter.free_preview && !userHasAccess;
 
   return (

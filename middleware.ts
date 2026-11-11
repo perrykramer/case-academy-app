@@ -12,12 +12,8 @@ const isProtectedRoute = createRouteMatcher([
 const isPremiumRoute = createRouteMatcher(['/case-course(.*)']);
 
 export default clerkMiddleware(async (auth, req) => {
-  console.log(`[middleware] Path: ${req.nextUrl.pathname}, isProtected: ${isProtectedRoute(req)}, isPremium: ${isPremiumRoute(req)}`);
-
   if (isProtectedRoute(req)) {
     const { userId, sessionClaims } = await auth();
-
-    console.log(`[middleware] userId: ${userId}, email claim: ${sessionClaims?.email}`);
 
     // Not signed in → bounce to Clerk sign-in
     if (!userId) {
@@ -25,12 +21,11 @@ export default clerkMiddleware(async (auth, req) => {
       return;
     }
 
-    // For premium routes, also check subscription status
+    // For premium routes, also check subscription status (by Clerk user ID;
+    // the email claim is only a fallback if the session token includes it)
     if (isPremiumRoute(req)) {
       const email = sessionClaims?.email as string | undefined;
-      const hasPremiumAccess = await hasAccess(email);
-
-      console.log(`[middleware] email: ${email}, hasPremiumAccess: ${hasPremiumAccess}`);
+      const hasPremiumAccess = await hasAccess({ userId, email });
 
       if (!hasPremiumAccess) {
         const subscribeUrl = new URL('/subscribe', req.url);
@@ -46,5 +41,6 @@ export const config = {
     '/case-course/:path*',
     '/api/:path*',
     '/library/:path*',
+    '/subscribe',
   ],
 };
