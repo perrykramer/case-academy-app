@@ -5,6 +5,9 @@ import Link from 'next/link';
 import { Wordmark } from '@/components/Wordmark';
 import { C } from '@/lib/tokens';
 import { DeadlinesTable } from '@/components/DeadlinesTable';
+import { BillingButton } from '@/components/BillingButton';
+import { getMembership, type Membership } from '@/lib/access';
+import { syncCheckoutSession } from '@/lib/billing';
 
 type Deadline = {
   id: string;
@@ -89,8 +92,111 @@ const pillNeutral: CSSProperties = {
   borderRadius: 20, background: '#F3F4F6', color: C.muted, border: '1px solid rgba(0,0,0,0.08)',
 };
 
-export default async function DashboardPage() {
-  const [user, deadlines] = await Promise.all([currentUser(), fetchDeadlines()]);
+function formatDate(iso: string | null): string | null {
+  if (!iso) return null;
+  return new Date(iso).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+}
+
+const btnPrimary: CSSProperties = {
+  display: 'inline-block', background: C.ink, color: C.canvas, borderRadius: 4,
+  padding: '10px 18px', fontSize: 13, fontWeight: 500, textDecoration: 'none', border: 'none',
+  fontFamily: 'var(--font-inter), Inter, sans-serif', lineHeight: 1.4,
+};
+const btnSecondary: CSSProperties = {
+  ...btnPrimary, background: '#ffffff', color: C.ink, border: `1px solid ${C.hairlineStrong}`,
+};
+const rowCard: CSSProperties = {
+  ...cardBase, flex: 'none', display: 'flex', alignItems: 'center',
+  justifyContent: 'space-between', gap: 16, flexWrap: 'wrap',
+};
+
+function MembershipCard({ m }: { m: Membership }) {
+  if (m.kind === 'tester') {
+    return (
+      <div style={{ ...cardBase, flex: 'none' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
+          <span style={{ fontSize: 15, fontWeight: 600, color: C.ink }}>Membership</span>
+          <span style={pillGreen}>Pilot access</span>
+        </div>
+        <div style={{ fontSize: 13, lineHeight: 1.55 }}>
+          You have full access as a pilot member. Thank you for helping build Case Academy.
+        </div>
+      </div>
+    );
+  }
+
+  if (!m.hasAccess) {
+    return (
+      <div style={rowCard}>
+        <div>
+          <div style={{ fontSize: 15, fontWeight: 600, color: C.ink, marginBottom: 4 }}>Unlock Case Academy</div>
+          <div style={{ fontSize: 13, lineHeight: 1.55 }}>
+            {m.status === 'canceled' ? 'Your membership has ended. ' : ''}
+            Get the full course and case library. Founding rate $9.99/mo, locked for life.
+          </div>
+        </div>
+        <Link href="/subscribe" style={btnPrimary}>Become a member</Link>
+      </div>
+    );
+  }
+
+  const date = formatDate(m.periodEnd);
+  const pastDue = m.status === 'past_due';
+  const planLabel =
+    m.foundingMember || m.plan === 'founding'
+      ? 'Founding Member · $9.99/mo'
+      : m.plan === 'annual' ? 'Annual membership' : 'Monthly membership';
+  const statusPill = pastDue ? (
+    <span style={{ ...pillNeutral, background: '#FEF3C7', color: '#92400E', border: '1px solid #FDE68A' }}>Payment issue</span>
+  ) : m.cancelAtPeriodEnd ? (
+    <span style={pillNeutral}>Canceling</span>
+  ) : (
+    <span style={pillGreen}>Active</span>
+  );
+
+  return (
+    <div style={rowCard}>
+      <div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4, flexWrap: 'wrap' }}>
+          <span style={{ fontSize: 15, fontWeight: 600, color: C.ink }}>{planLabel}</span>
+          {statusPill}
+        </div>
+        <div style={{ fontSize: 13, lineHeight: 1.55 }}>
+          {pastDue
+            ? 'Your last payment didn’t go through. Update your card to keep access.'
+            : m.cancelAtPeriodEnd
+              ? `Your membership ends on ${date}. Renew before then to keep your founding rate.`
+              : date ? `Renews on ${date}.` : null}
+        </div>
+      </div>
+      <div>
+        <BillingButton endpoint="/api/billing-portal" style={pastDue ? btnPrimary : btnSecondary}>
+          {pastDue ? 'Update payment method' : 'Manage subscription'}
+        </BillingButton>
+      </div>
+    </div>
+  );
+}
+
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ checkout?: string; session_id?: string }>;
+}) {
+  const { checkout, session_id } = await searchParams;
+  const user = await currentUser();
+
+  // Returning from Stripe Checkout: grant access now instead of waiting for the webhook.
+  let justJoined = false;
+  if (user && checkout === 'success' && session_id) {
+    justJoined = await syncCheckoutSession(session_id, user.id);
+  }
+
+  const email = (user?.primaryEmailAddress ?? user?.emailAddresses[0])?.emailAddress;
+  const [membership, deadlines] = await Promise.all([
+    getMembership({ userId: user?.id, email }),
+    fetchDeadlines(),
+  ]);
   const firstName = user?.firstName || 'Member';
 
   return (
@@ -113,10 +219,24 @@ export default async function DashboardPage() {
       <div style={{ maxWidth: 900, margin: '0 auto', padding: '44px 24px 80px' }}>
 
         {/* Welcome */}
-        <div style={{ marginBottom: 44 }}>
+        <div style={{ marginBottom: 24 }}>
           <h1 style={{ fontSize: 26, fontWeight: 600, color: C.ink, marginBottom: 4 }}>
-            Welcome back, {firstName}
+            {justJoined ? `Welcome to Case Academy, ${firstName}` : `Welcome back, ${firstName}`}
           </h1>
+        </div>
+
+        {justJoined && (
+          <div role="status" style={{
+            background: '#DCFCE7', border: '1px solid #BBF7D0', color: '#166534', borderRadius: 8,
+            padding: '12px 16px', fontSize: 14, marginBottom: 16,
+          }}>
+            You’re in. Your founding membership is active. Start with the Case Crash Course below.
+          </div>
+        )}
+
+        {/* Membership */}
+        <div style={{ marginBottom: 44 }}>
+          <MembershipCard m={membership} />
         </div>
 
         {/* ── Tier 1: Upcoming deadlines ── */}
