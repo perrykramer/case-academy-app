@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { auth } from '@clerk/nextjs/server';
+import { hasAccess } from '@/lib/access';
 import { getAllCases } from '@/lib/cases';
 import { getAllCasebooks } from '@/lib/casebooks';
 import { C } from '@/lib/tokens';
@@ -12,8 +13,12 @@ export const metadata = {
 export default async function LibraryPage() {
   const cases = getAllCases();
   const casebooks = getAllCasebooks();
-  const { userId } = await auth();
+  const { userId, sessionClaims } = await auth();
   const signedIn = !!userId;
+  const email = sessionClaims?.email as string | undefined;
+  // Members with full access can open every case, so the Free Preview /
+  // Members badges are only shown to people without access.
+  const userHasAccess = userId ? await hasAccess({ userId, email }) : false;
 
   return (
     <div style={{ minHeight: '100vh', backgroundColor: C.canvas }}>
@@ -83,7 +88,8 @@ export default async function LibraryPage() {
                   gap: '8px',
                 }}>
 
-                  {/* Badge */}
+                  {/* Badge (hidden for members with full access) */}
+                  {!userHasAccess && (
                   <div>
                     {c.free_preview ? (
                       <span style={{
@@ -103,6 +109,7 @@ export default async function LibraryPage() {
                       </span>
                     )}
                   </div>
+                  )}
 
                   {/* Title */}
                   <div style={{ fontSize: '15px', fontWeight: 600, color: C.ink }}>

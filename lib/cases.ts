@@ -48,9 +48,19 @@ export function getAllCases(): CaseFrontmatter[] {
     return data as CaseFrontmatter;
   });
 
+  // Easiest first, then alphabetical by title (case ID as a final tiebreaker).
+  // Cases without a numeric difficulty sort last.
+  const difficultyOf = (c: CaseFrontmatter) =>
+    typeof c.difficulty === 'number' ? c.difficulty : Number.POSITIVE_INFINITY;
+
   return cases
     .filter((c) => Boolean(c.case_id))
-    .sort((a, b) => a.case_id.localeCompare(b.case_id));
+    .sort(
+      (a, b) =>
+        difficultyOf(a) - difficultyOf(b) ||
+        (a.title ?? '').localeCompare(b.title ?? '', 'en', { sensitivity: 'base' }) ||
+        a.case_id.localeCompare(b.case_id),
+    );
 }
 
 export function getCaseById(caseId: string): Case | null {
