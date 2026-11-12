@@ -18,7 +18,11 @@ type Deadline = {
 };
 
 async function fetchDeadlines(): Promise<Deadline[]> {
-  const apiKey = process.env.AIRTABLE_API_KEY;
+  // Tolerate common paste mistakes: surrounding quotes/whitespace or a "Bearer " prefix.
+  const apiKey = process.env.AIRTABLE_API_KEY?.trim()
+    .replace(/^["']|["']$/g, '')
+    .replace(/^Bearer\s+/i, '')
+    .trim();
   const baseId = process.env.AIRTABLE_BASE_ID;
   const tableName = process.env.AIRTABLE_DEADLINES_TABLE;
 
@@ -39,7 +43,11 @@ async function fetchDeadlines(): Promise<Deadline[]> {
 
     if (!res.ok) {
       const body = await res.text();
-      console.log('[deadlines] AIRTABLE ERROR →', res.status, body);
+      // Log the key's shape (never the key) so a bad paste is easy to spot.
+      console.log('[deadlines] AIRTABLE ERROR →', res.status, body, {
+        keyLength: apiKey.length,
+        keyPrefix: apiKey.slice(0, 3),
+      });
       return [];
     }
 
